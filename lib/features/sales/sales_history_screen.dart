@@ -6,6 +6,7 @@ import '../../core/providers.dart';
 import '../../core/utils/money.dart';
 import '../../core/utils/time.dart';
 import '../../widgets/common.dart';
+import '../../widgets/hmc_bottom_nav.dart';
 
 class SalesHistoryScreen extends ConsumerWidget {
   const SalesHistoryScreen({super.key});
@@ -22,6 +23,7 @@ class SalesHistoryScreen extends ConsumerWidget {
               label: const Text('New sale'),
             )
           : null,
+      bottomNavigationBar: const HmcBottomNav(currentIndex: 2),
       body: StreamBuilder(
         stream: svc.watchSales(),
         builder: (ctx, snap) {

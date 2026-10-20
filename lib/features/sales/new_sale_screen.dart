@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/providers.dart';
 import '../../core/services/sales_service.dart';
+import '../../core/theme/app_theme.dart';
 import '../../core/utils/ids.dart';
 import '../../core/utils/money.dart';
 import '../../core/utils/time.dart';
@@ -279,6 +280,101 @@ class _NewSaleScreenState extends ConsumerState<NewSaleScreen> {
     }
   }
 
+  /// Small grey section label above each input, per the mockup.
+  Widget _label(String text) => Padding(
+        padding: const EdgeInsets.only(bottom: 6),
+        child: Text(
+          text,
+          style: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: HmcColors.slate,
+          ),
+        ),
+      );
+
+  Widget _customerCard() {
+    final customer = _customer;
+    return Card(
+      margin: EdgeInsets.zero,
+      child: InkWell(
+        onTap: _pickOrAddCustomer,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: Row(
+            children: [
+              const Icon(Icons.person_outlined, color: HmcColors.slate),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      customer?.name ?? 'Search or Add Customer',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: customer == null ? HmcColors.slate : null,
+                      ),
+                    ),
+                    if (customer != null)
+                      Text(
+                        customer.phone,
+                        style: const TextStyle(
+                            color: HmcColors.slate, fontSize: 12),
+                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Material(
+                color: HmcColors.blue600,
+                borderRadius: BorderRadius.circular(10),
+                child: InkWell(
+                  onTap: _pickOrAddCustomer,
+                  borderRadius: BorderRadius.circular(10),
+                  child: const Padding(
+                    padding: EdgeInsets.all(10),
+                    child:
+                        Icon(Icons.add, color: Colors.white, size: 22),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _payTypeChip(
+      String label, Color color, bool selected, VoidCallback onTap) {
+    return Expanded(
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(10),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            color: selected ? color : color.withOpacity(0.12),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+                color: color.withOpacity(selected ? 1.0 : 0.35)),
+          ),
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: selected ? Colors.white : color,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final discount = Money.tryParseMajor(_discount.text) ?? 0;
@@ -286,6 +382,10 @@ class _NewSaleScreenState extends ConsumerState<NewSaleScreen> {
     final total = _subtotal - discount + tax;
     final paid = Money.tryParseMajor(_paid.text) ?? 0;
     final balance = total - paid;
+    // Payment-type selection is derived from the paid field: no new state.
+    final isFull = total > 0 && paid >= total;
+    final isLoan = paid == 0;
+    final isPartial = !isFull && !isLoan;
     return PopScope(
       canPop: _lines.isEmpty && !_saving,
       onPopInvokedWithResult: (didPop, _) async {
@@ -298,34 +398,26 @@ class _NewSaleScreenState extends ConsumerState<NewSaleScreen> {
         if (discard && context.mounted) Navigator.of(context).pop();
       },
       child: Scaffold(
-        appBar: AppBar(title: const Text('New sale')),
+        appBar: AppBar(title: const Text('New Sale')),
         body: Form(
           key: _form,
           child: ListView(
             padding: const EdgeInsets.all(16),
             children: [
-              Card(
-                child: ListTile(
-                  leading: const Icon(Icons.person_outlined),
-                  title: Text(
-                      _customer?.name ?? 'Select customer *',
-                      style:
-                          const TextStyle(fontWeight: FontWeight.w600)),
-                  subtitle: _customer == null
-                      ? null
-                      : Text(_customer!.phone),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: _pickOrAddCustomer,
-                ),
-              ),
-              const SizedBox(height: 8),
+              _label('Date'),
               DateField(
-                  value: _date,
-                  onChanged: (v) => setState(() => _date = v),
-                  label: 'Sale date'),
-              const SectionHeader(title: 'Items'),
+                value: _date,
+                onChanged: (v) => setState(() => _date = v),
+                label: 'Date',
+              ),
+              const SizedBox(height: 12),
+              _label('Customer'),
+              _customerCard(),
+              const SizedBox(height: 16),
+              _label('Items'),
               for (var i = 0; i < _lines.length; i++)
                 Card(
+                  margin: const EdgeInsets.only(bottom: 8),
                   child: ListTile(
                     title: Text(_lines[i].label,
                         style: const TextStyle(
@@ -352,11 +444,13 @@ class _NewSaleScreenState extends ConsumerState<NewSaleScreen> {
                 icon: const Icon(Icons.add),
                 label: const Text('Add item'),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 16),
               Card(
+                margin: EdgeInsets.zero,
                 child: Padding(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(16),
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       Row(
                         mainAxisAlignment:
@@ -370,12 +464,12 @@ class _NewSaleScreenState extends ConsumerState<NewSaleScreen> {
                                   fontWeight: FontWeight.w700)),
                         ],
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 12),
                       MoneyField(
                           controller: _discount, label: 'Discount'),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 12),
                       MoneyField(controller: _tax, label: 'Tax'),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 12),
                       DropdownButtonFormField<String>(
                         value: _method,
                         decoration: const InputDecoration(
@@ -394,11 +488,35 @@ class _NewSaleScreenState extends ConsumerState<NewSaleScreen> {
                         onChanged: (v) =>
                             setState(() => _method = v ?? 'Cash'),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 12),
+                      _label('Payment Type'),
+                      Row(
+                        children: [
+                          _payTypeChip(
+                            'Full Payment',
+                            HmcColors.success,
+                            isFull,
+                            () => setState(() =>
+                                _paid.text = Money.toEditable(total)),
+                          ),
+                          const SizedBox(width: 8),
+                          // Partial: leave the field for manual entry.
+                          _payTypeChip(
+                              'Partial', HmcColors.blue600, isPartial, () {}),
+                          const SizedBox(width: 8),
+                          _payTypeChip(
+                            'On Loan',
+                            HmcColors.danger,
+                            isLoan,
+                            () => setState(() => _paid.text = '0'),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
                       MoneyField(
                           controller: _paid,
                           label: 'Payment received'),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 12),
                       Row(
                         mainAxisAlignment:
                             MainAxisAlignment.spaceBetween,
@@ -406,13 +524,16 @@ class _NewSaleScreenState extends ConsumerState<NewSaleScreen> {
                           const Text('Total',
                               style: TextStyle(
                                   fontWeight: FontWeight.w800,
-                                  fontSize: 16)),
+                                  fontSize: 18,
+                                  color: HmcColors.blue600)),
                           MoneyText(total,
                               style: const TextStyle(
                                   fontWeight: FontWeight.w800,
-                                  fontSize: 16)),
+                                  fontSize: 18,
+                                  color: HmcColors.blue600)),
                         ],
                       ),
+                      const SizedBox(height: 4),
                       Row(
                         mainAxisAlignment:
                             MainAxisAlignment.spaceBetween,
@@ -424,14 +545,14 @@ class _NewSaleScreenState extends ConsumerState<NewSaleScreen> {
                               negativeColor: Colors.red),
                         ],
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 12),
                       TextFormField(
                         controller: _warranty,
                         decoration: const InputDecoration(
                             labelText:
                                 'Warranty terms (optional)'),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 12),
                       TextFormField(
                         controller: _notes,
                         decoration: const InputDecoration(
@@ -450,9 +571,9 @@ class _NewSaleScreenState extends ConsumerState<NewSaleScreen> {
                         width: 18,
                         height: 18,
                         child: CircularProgressIndicator(
-                            strokeWidth: 2))
-                    : const Icon(Icons.receipt_long_outlined),
-                label: const Text('Save sale & receipt'),
+                            strokeWidth: 2, color: Colors.white))
+                    : const Icon(Icons.check),
+                label: const Text('Save Sale'),
               ),
               const SizedBox(height: 32),
             ],

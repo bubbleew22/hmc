@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/providers.dart';
 import '../../core/theme/app_theme.dart';
+import '../../startup_error_app.dart';
 
 /// Decides the first route: setup → login → home.
 class SplashScreen extends ConsumerStatefulWidget {
@@ -16,15 +17,17 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    _boot();
+    // Let the first frame paint before touching the database, so the splash
+    // is always visible even if boot throws.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _boot());
   }
 
   Future<void> _boot() async {
-    final shop = ref.read(shopServiceProvider);
-    final auth = ref.read(authServiceProvider);
-    final catalog = ref.read(catalogServiceProvider);
-    final expenses = ref.read(expenseServiceProvider);
     try {
+      final shop = ref.read(shopServiceProvider);
+      final auth = ref.read(authServiceProvider);
+      final catalog = ref.read(catalogServiceProvider);
+      final expenses = ref.read(expenseServiceProvider);
       final settings = await shop.getSettings();
       final done = settings?.setupDone == 1;
       final hasUsers = await auth.anyUsers();
@@ -40,6 +43,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       if (!mounted) return;
       ref.read(setupDoneProvider.notifier).state = false;
       ref.read(usersExistProvider.notifier).state = false;
+    } finally {
+      hmcStartupPhase = false;
     }
   }
 

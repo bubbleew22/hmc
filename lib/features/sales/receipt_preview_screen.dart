@@ -9,6 +9,9 @@ import 'package:share_plus/share_plus.dart';
 import '../../core/pdf/invoice_pdf.dart';
 import '../../core/providers.dart';
 import '../../core/services/catalog_service.dart';
+import '../../core/theme/app_theme.dart';
+import '../../core/utils/money.dart';
+import '../../core/utils/time.dart';
 import '../../data/db/app_database.dart';
 import '../../widgets/common.dart';
 
@@ -26,6 +29,13 @@ class _ReceiptPreviewScreenState
     extends ConsumerState<ReceiptPreviewScreen> {
   Uint8List? _pdf;
   String? _error;
+
+  // Screen-render data loaded alongside the PDF bytes.
+  ShopSetting? _settings;
+  SalesInvoice? _invoice;
+  List<SalesItem> _items = const [];
+  List<ItemLabel> _labels = const [];
+  Customer? _customer;
 
   @override
   void initState() {
@@ -99,7 +109,16 @@ class _ReceiptPreviewScreenState
         labels: labels,
         customer: customer,
       );
-      if (mounted) setState(() => _pdf = pdf);
+      if (mounted) {
+        setState(() {
+          _pdf = pdf;
+          _settings = settings;
+          _invoice = inv;
+          _items = items;
+          _labels = labels;
+          _customer = customer;
+        });
+      }
     } catch (e) {
       if (mounted) setState(() => _error = e.toString());
     }
@@ -140,14 +159,245 @@ class _ReceiptPreviewScreenState
       ),
       body: _error != null
           ? Center(child: Text('Could not build receipt:\n$_error'))
-          : _pdf == null
+          : _invoice == null
               ? const LoadingView()
-              : PdfPreview(
-                  build: (_) => _pdf!,
-                  canChangePageFormat: false,
-                  canChangeOrientation: false,
-                  canDebug: false,
+              : _receiptBody(),
+    );
+  }
+
+  Widget _receiptBody() {
+    final settings = _settings;
+    final inv = _invoice!;
+    final customer = _customer!;
+    final shopName = (settings?.shopName ?? '').isEmpty
+        ? 'Hasan Mobile Center'
+        : settings!.shopName;
+    final subtitle = (settings?.subtitle ?? '').isEmpty
+        ? 'Shewa Adda'
+        : settings!.subtitle;
+    final contactLine = [
+      if ((settings?.address ?? '').isNotEmpty) settings!.address,
+      if ((settings?.contactNumber ?? '').isNotEmpty)
+        settings!.contactNumber,
+    ].join(' | ');
+    final remaining = inv.total - inv.paid;
+
+    return Container(
+      color: HmcColors.slateBg,
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Card(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Shop header.
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: HmcColors.royal,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(Icons.store,
+                          color: Colors.white, size: 28),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(shopName,
+                              style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w800)),
+                          Text(subtitle,
+                              style: const TextStyle(
+                                  color: HmcColors.gold600,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 14)),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
+                if (contactLine.isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  Text(contactLine,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                          color: Colors.grey, fontSize: 12)),
+                ],
+                const Divider(height: 28),
+                _infoRow('Invoice No', inv.invoiceNo),
+                _infoRow('Date', PkTime.formatDateTime(inv.saleDate)),
+                _infoRow(
+                    'Customer',
+                    customer.phone.isEmpty
+                        ? customer.name
+                        : '${customer.name}\n${customer.phone}'),
+                const Divider(height: 28),
+                // Items table.
+                _tableHeader(),
+                const Divider(height: 16),
+                for (var i = 0; i < _items.length; i++)
+                  _itemRow(i),
+                const Divider(height: 16),
+                // Totals.
+                _totalRow('Subtotal', Money.format(inv.total), null),
+                _totalRow('Received', Money.format(inv.paid), null),
+                _totalRow(
+                  'Remaining',
+                  Money.format(remaining),
+                  remaining > 0 ? HmcColors.danger : HmcColors.success,
+                ),
+                const Divider(height: 28),
+                const Text(
+                  'Thank you for shopping with us!',
+                  textAlign: TextAlign.center,
+                  style:
+                      TextStyle(color: Colors.grey, fontSize: 13),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  shopName,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontWeight: FontWeight.w700),
+                ),
+                if ((settings?.invoiceFooter ?? '').isNotEmpty) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    settings!.invoiceFooter,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                        color: Colors.grey, fontSize: 12),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _infoRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 92,
+            child: Text(label,
+                style:
+                    const TextStyle(color: Colors.grey, fontSize: 13)),
+          ),
+          Expanded(
+            child: Text(value,
+                textAlign: TextAlign.right,
+                style: const TextStyle(
+                    fontSize: 13, fontWeight: FontWeight.w600)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _tableHeader() {
+    const style = TextStyle(
+        color: Colors.grey, fontSize: 12, fontWeight: FontWeight.w700);
+    return const Row(
+      children: [
+        SizedBox(width: 24, child: Text('#', style: style)),
+        Expanded(child: Text('Item', style: style)),
+        SizedBox(
+            width: 40,
+            child: Text('Qty', style: style, textAlign: TextAlign.right)),
+        SizedBox(
+            width: 70,
+            child: Text('Price', style: style, textAlign: TextAlign.right)),
+        SizedBox(
+            width: 78,
+            child: Text('Total', style: style, textAlign: TextAlign.right)),
+      ],
+    );
+  }
+
+  Widget _itemRow(int index) {
+    final it = _items[index];
+    final label = _labels[index];
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 24,
+            child: Text('${index + 1}',
+                style:
+                    const TextStyle(color: Colors.grey, fontSize: 13)),
+          ),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label.title,
+                    style: const TextStyle(
+                        fontSize: 13, fontWeight: FontWeight.w600)),
+                if (label.imei.isNotEmpty)
+                  Text(label.imei,
+                      style: const TextStyle(
+                          color: Colors.grey, fontSize: 11)),
+              ],
+            ),
+          ),
+          SizedBox(
+            width: 40,
+            child: Text('${it.quantity}',
+                textAlign: TextAlign.right,
+                style: const TextStyle(fontSize: 13)),
+          ),
+          SizedBox(
+            width: 70,
+            child: Text(Money.format(it.unitPrice),
+                textAlign: TextAlign.right,
+                style: const TextStyle(fontSize: 13)),
+          ),
+          SizedBox(
+            width: 78,
+            child: Text(Money.format(it.unitPrice * it.quantity),
+                textAlign: TextAlign.right,
+                style: const TextStyle(
+                    fontSize: 13, fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _totalRow(String label, String value, Color? color) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          Text(label,
+              style:
+                  const TextStyle(color: Colors.grey, fontSize: 13)),
+          SizedBox(
+            width: 110,
+            child: Text(value,
+                textAlign: TextAlign.right,
+                style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: color)),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/providers.dart';
+import '../../core/theme/app_theme.dart';
 import '../../widgets/common.dart';
 
 class BrandsScreen extends ConsumerStatefulWidget {
@@ -30,6 +31,7 @@ class _BrandsScreenState extends ConsumerState<BrandsScreen> {
   @override
   Widget build(BuildContext context) {
     final catalog = ref.watch(catalogServiceProvider);
+    final isAdmin = ref.isAdmin;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Brands'),
@@ -44,14 +46,11 @@ class _BrandsScreenState extends ConsumerState<BrandsScreen> {
           ),
         ],
       ),
-      floatingActionButton: ref.isAdmin
-          ? FloatingActionButton(
-              onPressed: _addBrand, child: const Icon(Icons.add))
-          : null,
       body: Column(
         children: [
-          SearchField(onChanged: (v) => setState(() => _query = v),
-              hint: 'Search brands...'),
+          SearchField(
+              onChanged: (v) => setState(() => _query = v),
+              hint: 'Search brand...'),
           Expanded(
             child: StreamBuilder(
               stream: catalog.watchBrands(
@@ -66,48 +65,111 @@ class _BrandsScreenState extends ConsumerState<BrandsScreen> {
                           .contains(_query.toLowerCase()))
                       .toList();
                 }
-                if (brands.isEmpty) {
+                if (brands.isEmpty && !isAdmin) {
                   return const EmptyState(
                     icon: Icons.category_outlined,
                     title: 'No brands',
-                    subtitle: 'Add your first brand to start the catalogue.',
+                    subtitle:
+                        'Add your first brand to start the catalogue.',
                   );
                 }
-                return ListView.builder(
-                  itemCount: brands.length,
+                final tiles = brands.length + (isAdmin ? 1 : 0);
+                if (tiles == 0) {
+                  return const EmptyState(
+                    icon: Icons.category_outlined,
+                    title: 'No brands',
+                    subtitle:
+                        'Add your first brand to start the catalogue.',
+                  );
+                }
+                return GridView.builder(
+                  padding: const EdgeInsets.all(12),
+                  gridDelegate:
+                      const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3,
+                    childAspectRatio: 0.85,
+                    crossAxisSpacing: 8,
+                    mainAxisSpacing: 8,
+                  ),
+                  itemCount: tiles,
                   itemBuilder: (_, i) {
+                    if (i >= brands.length) return _addTile();
                     final b = brands[i];
+                    final archived = b.isArchived == 1;
+                    final color = archived
+                        ? HmcColors.slate
+                        : HmcColors.brandColor(b.name);
                     return Card(
-                      child: ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor:
-                              Theme.of(context).colorScheme.primaryContainer,
-                          child: Text(b.name.characters.first,
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.w800)),
-                        ),
-                        title: Text(b.name,
-                            style: TextStyle(
-                                decoration: b.isArchived == 1
-                                    ? TextDecoration.lineThrough
-                                    : null)),
-                        trailing: ref.isAdmin
-                            ? PopupMenuButton<String>(
-                                onSelected: (v) =>
-                                    _onMenu(v, b.id, b.name, b.isArchived == 1),
+                      margin: const EdgeInsets.all(4),
+                      child: Stack(
+                        children: [
+                          Positioned.fill(
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(16),
+                              onTap: () =>
+                                  context.push('/brand/${b.id}'),
+                              child: Padding(
+                                padding: const EdgeInsets.fromLTRB(
+                                    8, 28, 8, 12),
+                                child: Column(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      b.name,
+                                      textAlign: TextAlign.center,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w700,
+                                        color: color,
+                                        decoration: archived
+                                            ? TextDecoration.lineThrough
+                                            : null,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    StreamBuilder(
+                                      stream: catalog
+                                          .watchModels(b.id),
+                                      builder: (ctx2, ms) => Text(
+                                        ms.hasData
+                                            ? '${ms.data!.length} Models'
+                                            : '…',
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          color: HmcColors.slate,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          if (isAdmin)
+                            Positioned(
+                              top: 2,
+                              right: 2,
+                              child: PopupMenuButton<String>(
+                                iconSize: 20,
+                                padding: EdgeInsets.zero,
+                                onSelected: (v) => _onMenu(
+                                    v, b.id, b.name, archived),
                                 itemBuilder: (_) => [
                                   const PopupMenuItem(
                                       value: 'rename',
                                       child: Text('Rename')),
                                   PopupMenuItem(
                                       value: 'archive',
-                                      child: Text(b.isArchived == 1
+                                      child: Text(archived
                                           ? 'Unarchive'
                                           : 'Archive')),
                                 ],
-                              )
-                            : const Icon(Icons.chevron_right),
-                        onTap: () => context.push('/brand/${b.id}'),
+                              ),
+                            ),
+                        ],
                       ),
                     );
                   },
@@ -116,6 +178,36 @@ class _BrandsScreenState extends ConsumerState<BrandsScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _addTile() {
+    return Card(
+      margin: const EdgeInsets.all(4),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: HmcColors.royal, width: 1.5),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: _addBrand,
+        child: const Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.add, size: 36, color: HmcColors.royal),
+            SizedBox(height: 6),
+            Text(
+              'Add New Brand',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: HmcColors.royal,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

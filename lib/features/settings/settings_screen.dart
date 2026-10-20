@@ -8,6 +8,7 @@ import '../../core/share/whatsapp.dart';
 import '../../core/theme/app_theme.dart';
 import '../../data/db/app_database.dart';
 import '../../widgets/common.dart';
+import '../../widgets/hmc_bottom_nav.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -17,6 +18,7 @@ class SettingsScreen extends ConsumerWidget {
     final db = ref.watch(databaseProvider);
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
+      bottomNavigationBar: const HmcBottomNav(currentIndex: 4),
       body: FutureBuilder(
         future: db.readSettings(),
         builder: (ctx, snap) {
@@ -76,6 +78,26 @@ class SettingsScreen extends ConsumerWidget {
                           lowStockThreshold: Value(v)));
                 }
               }),
+              const SectionHeader(title: 'Operations'),
+              _tile(context, Icons.shopping_bag_outlined, 'Purchases',
+                  'Purchase history and new purchases',
+                  () => context.push('/purchases')),
+              _tile(context, Icons.local_shipping_outlined, 'Suppliers',
+                  'Supplier list and outstanding', () => context.push('/suppliers')),
+              _tile(context, Icons.send_outlined, 'Dispatch & consignment',
+                  'Units sent to sub-dealers',
+                  () => context.push('/dispatch')),
+              _tile(context, Icons.assignment_return_outlined,
+                  'Returns & refunds', 'Sales and purchase returns',
+                  () => context.push('/returns')),
+              _tile(context, Icons.money_off_outlined, 'Expenses',
+                  'Shop expense entries', () => context.push('/expenses')),
+              _tile(context, Icons.payments_outlined, 'Credit recovery',
+                  'Collect pending customer dues',
+                  () => context.push('/credit')),
+              _tile(context, Icons.category_outlined, 'Brands & models',
+                  'Manage catalogue brands and models',
+                  () => context.push('/brands')),
               const SectionHeader(title: 'Data & security'),
               if (ref.isAdmin)
                 _tile(context, Icons.manage_accounts_outlined,
