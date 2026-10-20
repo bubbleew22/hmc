@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build HMC
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  build-apk:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -32,3 +32,51 @@ jobs:
         with:
           name: HMC-release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.7"
+          channel: stable
+
+      - run: flutter pub get
+      - run: dart run build_runner build --delete-conflicting-outputs
+
+      - run: flutter build windows --release
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: HMC-windows-exe
+          path: build/windows/x64/runner/Release
+
+  build-ios:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.7"
+          channel: stable
+
+      - run: flutter pub get
+      - run: dart run build_runner build --delete-conflicting-outputs
+
+      # Unsigned: no Apple Developer signing available, so this IPA cannot
+      # be installed on a real iPhone. It is built for archiving only.
+      - run: flutter build ios --release --no-codesign
+
+      - run: |
+          cd build/ios/iphoneos
+          mkdir Payload
+          cp -R Runner.app Payload/
+          zip -q -r "$GITHUB_WORKSPACE/HMC-ios-unsigned.ipa" Payload
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: HMC-ios-unsigned
+          path: HMC-ios-unsigned.ipa
