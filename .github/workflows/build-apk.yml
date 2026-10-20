@@ -26,6 +26,16 @@ jobs:
       - run: flutter analyze --no-fatal-infos --no-fatal-warnings
       - run: flutter test
 
+      - name: Set up release signing
+        run: |
+          echo "${{ secrets.HMC_KEYSTORE_BASE64 }}" | base64 -d > "$GITHUB_WORKSPACE/android/hmc-release.jks"
+          cat > "$GITHUB_WORKSPACE/android/key.properties" <<EOF
+          storePassword=${{ secrets.HMC_KEYSTORE_PASSWORD }}
+          keyPassword=${{ secrets.HMC_KEY_PASSWORD }}
+          keyAlias=${{ secrets.HMC_KEY_ALIAS }}
+          storeFile=$GITHUB_WORKSPACE/android/hmc-release.jks
+          EOF
+
       - run: flutter build apk --release
 
       - uses: actions/upload-artifact@v4
