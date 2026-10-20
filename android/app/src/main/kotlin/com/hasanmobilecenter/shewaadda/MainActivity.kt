@@ -1,4 +1,4 @@
-package com.hasanmobilecenter.hmc
+package com.hasanmobilecenter.shewaadda
 
 import io.flutter.embedding.android.FlutterActivity
 
