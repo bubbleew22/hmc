@@ -1,7 +1,6 @@
 import 'package:drift/drift.dart';
 
 import '../../data/db/app_database.dart';
-import '../utils/time.dart';
 
 /// Shop settings + first-launch setup.
 class ShopService {

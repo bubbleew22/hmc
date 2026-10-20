@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/providers.dart';
-import '../../core/utils/money.dart';
 import '../../widgets/common.dart';
 
 class CustomersScreen extends ConsumerStatefulWidget {

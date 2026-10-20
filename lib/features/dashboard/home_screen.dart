@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/providers.dart';
 import '../../core/theme/app_theme.dart';
-import '../../core/utils/money.dart';
 import '../../core/utils/time.dart';
 import '../../widgets/common.dart';
 
@@ -33,7 +32,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final session = ref.watch(sessionProvider);
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) async {

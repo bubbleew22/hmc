@@ -23,7 +23,6 @@ class _CreditRecoveryScreenState
     extends ConsumerState<CreditRecoveryScreen> {
   @override
   Widget build(BuildContext context) {
-    final svc = ref.watch(customerServiceProvider);
     return Scaffold(
       appBar: AppBar(title: const Text('Credit recovery')),
       body: FutureBuilder(

@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/providers.dart';
 import '../../core/theme/app_theme.dart';
-import '../../widgets/common.dart';
 
 /// Local PIN login / lock screen.
 class LoginScreen extends ConsumerStatefulWidget {

@@ -8,7 +8,6 @@ import '../../core/utils/money.dart';
 import '../../core/utils/time.dart';
 import '../../data/db/app_database.dart';
 import '../../widgets/common.dart';
-import '../../widgets/pickers.dart';
 
 /// Product returns & refunds with explicit restocking rules.
 class ReturnsScreen extends ConsumerStatefulWidget {

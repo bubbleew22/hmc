@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import '../../core/providers.dart';
 import '../../core/utils/money.dart';
 import '../../widgets/common.dart';
-import '../../widgets/pickers.dart';
 
 class SuppliersScreen extends ConsumerStatefulWidget {
   const SuppliersScreen({super.key});

@@ -17,7 +17,6 @@ class PickedVariant {
 /// Drill-down picker: brand → model → variant.
 Future<PickedVariant?> pickVariant(BuildContext context, WidgetRef ref) async {
   final catalog = ref.read(catalogServiceProvider);
-  final db = ref.read(databaseProvider);
 
   final brands = await catalog.watchBrands().first;
   if (!context.mounted) return null;
