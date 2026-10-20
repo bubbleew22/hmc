@@ -23,7 +23,7 @@ class StartupErrorApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       home: Scaffold(
         appBar: AppBar(
-          title: const Text('Hasan Mobile Center'),
+          title: const Text('Hassan Mobile Center'),
           backgroundColor: const Color(0xFF10254A),
           foregroundColor: Colors.white,
         ),

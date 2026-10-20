@@ -24,7 +24,7 @@ class AboutScreen extends StatelessWidget {
                         size: 72,
                         color: HmcColors.navy800)),
                 const SizedBox(height: 16),
-                const Text('HASAN MOBILE CENTER',
+                const Text('HASSAN MOBILE CENTER',
                     style: TextStyle(
                         fontSize: 20, fontWeight: FontWeight.w800)),
                 const Text('SHEWA ADDA',

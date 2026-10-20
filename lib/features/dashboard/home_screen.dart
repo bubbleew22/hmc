@@ -25,7 +25,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Future<bool> _onPop() => confirmDialog(
         context,
         title: 'Exit app?',
-        message: 'Do you want to close Hasan Mobile Center?',
+        message: 'Do you want to close Hassan Mobile Center?',
         confirmLabel: 'Exit',
       );
 
@@ -65,7 +65,7 @@ class _DashboardState extends ConsumerState<_Dashboard> {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(settings.valueOrNull?.shopName ?? 'Hasan Mobile Center',
+            Text(settings.valueOrNull?.shopName ?? 'Hassan Mobile Center',
                 style: const TextStyle(fontSize: 18, color: Colors.white)),
             Text(settings.valueOrNull?.subtitle ?? 'Shewa Adda',
                 style: const TextStyle(

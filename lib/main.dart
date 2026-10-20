@@ -6,7 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'app.dart';
 import 'startup_error_app.dart';
 
-/// Hasan Mobile Center — Shewa Adda
+/// Hassan Mobile Center — Shewa Adda
 /// Fully offline-first. No Firebase, no network calls on startup.
 ///
 /// Startup is wrapped in a last-resort error boundary: any uncaught error

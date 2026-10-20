@@ -163,7 +163,7 @@ class _CreditRecoveryScreenState
       template: settings?.whatsappTemplate ?? '',
       customerName: customer.name,
       amountText: Money.format(balance),
-      shopName: settings?.shopName ?? 'Hasan Mobile Center',
+      shopName: settings?.shopName ?? 'Hassan Mobile Center',
     );
     // Let the user review/edit before sending.
     final edited = await showDialog<String>(

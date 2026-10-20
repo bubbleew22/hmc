@@ -3,7 +3,7 @@
 /// Cloud integration is intentionally DISABLED in this build.
 /// See [CloudConfig] for the future-sync seams.
 class AppConfig {
-  static const String appName = 'Hasan Mobile Center';
+  static const String appName = 'Hassan Mobile Center';
   static const String appSubtitle = 'Shewa Adda';
   static const String appTagline = 'Smart Mobile Business Management';
   static const String packageName = 'com.hasanmobilecenter.shewaadda';

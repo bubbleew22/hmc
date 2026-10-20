@@ -196,7 +196,7 @@ class CustomerDetailScreen extends ConsumerWidget {
       template: settings?.whatsappTemplate ?? '',
       customerName: customer.name,
       amountText: Money.format(balance),
-      shopName: settings?.shopName ?? 'Hasan Mobile Center',
+      shopName: settings?.shopName ?? 'Hassan Mobile Center',
     );
     final ok = await WhatsApp.sendReminder(customer.phone, msg);
     if (!ok && context.mounted) {

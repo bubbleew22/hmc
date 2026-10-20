@@ -9,7 +9,7 @@ import 'package:drift/drift.dart';
 class ShopSettings extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get shopName =>
-      text().withDefault(const Constant('Hasan Mobile Center'))();
+      text().withDefault(const Constant('Hassan Mobile Center'))();
   TextColumn get subtitle => text().withDefault(const Constant('Shewa Adda'))();
   TextColumn get contactNumber => text().withDefault(const Constant(''))();
   TextColumn get address => text().withDefault(const Constant(''))();

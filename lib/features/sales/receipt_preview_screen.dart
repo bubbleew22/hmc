@@ -91,7 +91,7 @@ class _ReceiptPreviewScreenState
         settings: settings ??
             ShopSetting(
               id: 0,
-              shopName: 'Hasan Mobile Center',
+              shopName: 'Hassan Mobile Center',
               subtitle: 'Shewa Adda',
               contactNumber: '',
               address: '',
@@ -170,7 +170,7 @@ class _ReceiptPreviewScreenState
     final inv = _invoice!;
     final customer = _customer!;
     final shopName = (settings?.shopName ?? '').isEmpty
-        ? 'Hasan Mobile Center'
+        ? 'Hassan Mobile Center'
         : settings!.shopName;
     final subtitle = (settings?.subtitle ?? '').isEmpty
         ? 'Shewa Adda'

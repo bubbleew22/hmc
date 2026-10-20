@@ -77,7 +77,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               size: 56,
                               color: HmcColors.navy800)),
                       const SizedBox(height: 12),
-                      const Text('HASAN MOBILE CENTER',
+                      const Text('HASSAN MOBILE CENTER',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                               fontSize: 18, fontWeight: FontWeight.w800)),

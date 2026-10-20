@@ -19,7 +19,7 @@ class _SetupWizardScreenState extends ConsumerState<SetupWizardScreen> {
   int _step = 0;
   bool _saving = false;
 
-  final _shopName = TextEditingController(text: 'Hasan Mobile Center');
+  final _shopName = TextEditingController(text: 'Hassan Mobile Center');
   final _subtitle = TextEditingController(text: 'Shewa Adda');
   final _contact = TextEditingController();
   final _address = TextEditingController();

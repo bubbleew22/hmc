@@ -70,7 +70,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                       size: 72,
                       color: HmcColors.gold300)),
               const SizedBox(height: 20),
-              const Text('HASAN MOBILE CENTER',
+              const Text('HASSAN MOBILE CENTER',
                   style: TextStyle(
                       color: Colors.white,
                       fontSize: 22,

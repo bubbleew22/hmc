@@ -32,7 +32,7 @@ class $ShopSettingsTable extends ShopSettings
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: false,
-    defaultValue: const Constant('Hasan Mobile Center'),
+    defaultValue: const Constant('Hassan Mobile Center'),
   );
   static const VerificationMeta _subtitleMeta = const VerificationMeta(
     'subtitle',

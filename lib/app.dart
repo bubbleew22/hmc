@@ -14,7 +14,7 @@ class HmcApp extends ConsumerWidget {
     final themeMode = ref.watch(themeModeProvider);
 
     return MaterialApp.router(
-      title: 'Hasan Mobile Center',
+      title: 'Hassan Mobile Center',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
