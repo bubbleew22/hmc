@@ -77,6 +77,80 @@ class _AddStockScreenState extends ConsumerState<AddStockScreen> {
     }
   }
 
+  /// Shows a dialog to manually add a new model for the selected brand.
+  /// The new model is auto-selected after creation.
+  Future<void> _showAddModelDialog(BuildContext context) async {
+    final nameCtrl = TextEditingController();
+    final ramCtrl = TextEditingController();
+    final result = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Add new model'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: nameCtrl,
+              decoration: const InputDecoration(
+                labelText: 'Model name *',
+                hintText: 'e.g. Redmi Note 14',
+              ),
+              autofocus: true,
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: ramCtrl,
+              decoration: const InputDecoration(
+                labelText: 'RAM (optional)',
+                hintText: 'e.g. 8GB',
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () {
+              final name = nameCtrl.text.trim();
+              if (name.isEmpty) return;
+              Navigator.pop(ctx, name);
+            },
+            child: const Text('Add'),
+          ),
+        ],
+      ),
+    );
+    if (result != null && result.isNotEmpty && _brandId != null) {
+      final catalog = ref.read(catalogServiceProvider);
+      final model = await catalog.addModel(
+        brandId: _brandId!,
+        name: result,
+      );
+      // Add a default variant so the model is immediately usable.
+      // User can add more variants (storage options) from the model detail.
+      final ram = ramCtrl.text.trim();
+      await catalog.addVariant(
+        modelId: model.id,
+        ram: ram,
+        storage: '128GB',
+        color: '',
+        condition: 'New',
+      );
+      if (mounted) {
+        setState(() {
+          _modelId = model.id;
+          _variantId = null;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Model "$result" added')),
+        );
+      }
+    }
+  }
+
   Future<void> _save() async {
     if (!_form.currentState!.validate()) return;
     if (_variantId == null) {
@@ -176,12 +250,32 @@ class _AddStockScreenState extends ConsumerState<AddStockScreen> {
                         const InputDecoration(labelText: 'Model *'),
                     items: [
                       for (final m in models)
-                        DropdownMenuItem(value: m.id, child: Text(m.name))
+                        DropdownMenuItem(value: m.id, child: Text(m.name)),
+                      const DropdownMenuItem(
+                        value: '__add_new__',
+                        child: Row(
+                          children: [
+                            Icon(Icons.add_circle_outline,
+                                size: 18, color: Colors.blue),
+                            SizedBox(width: 8),
+                            Text('+ Add new model',
+                                style: TextStyle(
+                                    color: Colors.blue,
+                                    fontWeight: FontWeight.w600)),
+                          ],
+                        ),
+                      ),
                     ],
-                    onChanged: (v) => setState(() {
-                      _modelId = v;
-                      _variantId = null;
-                    }),
+                    onChanged: (v) {
+                      if (v == '__add_new__') {
+                        _showAddModelDialog(ctx);
+                      } else {
+                        setState(() {
+                          _modelId = v;
+                          _variantId = null;
+                        });
+                      }
+                    },
                     validator: (v) =>
                         v == null ? 'Select a model' : null,
                   );
