@@ -132,9 +132,10 @@ class AppTheme {
           borderSide: BorderSide(color: scheme.primary, width: 2),
         ),
         contentPadding:
-            const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
         filled: true,
         fillColor: isLight ? Colors.white : null,
+        floatingLabelBehavior: FloatingLabelBehavior.auto,
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(

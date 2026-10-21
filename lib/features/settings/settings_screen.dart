@@ -167,19 +167,23 @@ class SettingsScreen extends ConsumerWidget {
                   controller: name,
                   decoration: const InputDecoration(
                       labelText: 'Shop name')),
+              const SizedBox(height: 12),
               TextField(
                   controller: subtitle,
                   decoration: const InputDecoration(
                       labelText: 'Subtitle / location')),
+              const SizedBox(height: 12),
               TextField(
                   controller: contact,
                   decoration: const InputDecoration(
                       labelText: 'Contact number'),
                   keyboardType: TextInputType.phone),
+              const SizedBox(height: 12),
               TextField(
                   controller: address,
                   decoration: const InputDecoration(
                       labelText: 'Address')),
+              const SizedBox(height: 12),
               TextField(
                   controller: footer,
                   decoration: const InputDecoration(

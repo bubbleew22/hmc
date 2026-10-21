@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/providers.dart';
+import '../../core/share/whatsapp.dart';
 import '../../core/theme/app_theme.dart';
 import '../../widgets/common.dart';
 import '../../widgets/premium.dart';
@@ -126,44 +127,78 @@ class _CustomersScreenState extends ConsumerState<CustomersScreen> {
                             return const SizedBox.shrink();
                           }
                           final bal = b.data!;
-                          return Column(
+                          return Row(
                             mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment:
-                                MainAxisAlignment.center,
-                            crossAxisAlignment:
-                                CrossAxisAlignment.end,
                             children: [
-                              bal > 0
-                                  ? MoneyText(bal,
-                                      style: const TextStyle(
-                                          fontWeight: FontWeight.w800,
-                                          color: HmcColors.danger))
-                                  : const Text('Rs 0',
+                              if (c.phone.isNotEmpty)
+                                IconButton(
+                                  icon: const Icon(Icons.chat_outlined,
+                                      color: Color(0xFF25D366)),
+                                  tooltip: 'WhatsApp',
+                                  onPressed: () async {
+                                    final settings = await ref
+                                        .read(shopServiceProvider)
+                                        .getSettings();
+                                    final msg = WhatsApp.buildMessage(
+                                      template:
+                                          settings?.whatsappTemplate ?? '',
+                                      customerName: c.name,
+                                      amountText: 'Rs ${bal ~/ 100}',
+                                      shopName:
+                                          settings?.shopName ?? 'HMC',
+                                    );
+                                    if (ctx2.mounted) {
+                                      final ok = await WhatsApp.sendReminder(
+                                          c.phone, msg);
+                                      if (!ok && ctx2.mounted) {
+                                        ScaffoldMessenger.of(ctx2)
+                                            .showSnackBar(const SnackBar(
+                                                content: Text(
+                                                    'Could not open WhatsApp')));
+                                      }
+                                    }
+                                  },
+                                ),
+                              Column(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.center,
+                                crossAxisAlignment:
+                                    CrossAxisAlignment.end,
+                                children: [
+                                  bal > 0
+                                      ? MoneyText(bal,
+                                          style: const TextStyle(
+                                              fontWeight: FontWeight.w800,
+                                              color: HmcColors.danger))
+                                      : const Text('Rs 0',
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.w800,
+                                              color: HmcColors.success)),
+                                  Container(
+                                    margin:
+                                        const EdgeInsets.only(top: 3),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 3),
+                                    decoration: BoxDecoration(
+                                      color: (bal > 0
+                                              ? HmcColors.danger
+                                              : HmcColors.success)
+                                          .withValues(alpha: 0.12),
+                                      borderRadius:
+                                          BorderRadius.circular(10),
+                                    ),
+                                    child: Text(
+                                      bal > 0 ? 'Due' : 'Clear',
                                       style: TextStyle(
-                                          fontWeight: FontWeight.w800,
-                                          color: HmcColors.success)),
-                              Container(
-                                margin:
-                                    const EdgeInsets.only(top: 3),
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 3),
-                                decoration: BoxDecoration(
-                                  color: (bal > 0
-                                          ? HmcColors.danger
-                                          : HmcColors.success)
-                                      .withValues(alpha: 0.12),
-                                  borderRadius:
-                                      BorderRadius.circular(10),
-                                ),
-                                child: Text(
-                                  bal > 0 ? 'Due' : 'Clear',
-                                  style: TextStyle(
-                                      fontSize: 10.5,
-                                      fontWeight: FontWeight.w700,
-                                      color: bal > 0
-                                          ? HmcColors.danger
-                                          : HmcColors.success),
-                                ),
+                                          fontSize: 10.5,
+                                          fontWeight: FontWeight.w700,
+                                          color: bal > 0
+                                              ? HmcColors.danger
+                                              : HmcColors.success),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           );

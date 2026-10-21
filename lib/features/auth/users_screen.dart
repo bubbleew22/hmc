@@ -75,6 +75,7 @@ class UsersScreen extends ConsumerWidget {
                   controller: name,
                   decoration: const InputDecoration(
                       labelText: 'Name *')),
+              const SizedBox(height: 12),
               TextField(
                 controller: pin,
                 decoration: const InputDecoration(
@@ -82,6 +83,7 @@ class UsersScreen extends ConsumerWidget {
                 keyboardType: TextInputType.number,
                 obscureText: true,
               ),
+              const SizedBox(height: 12),
               DropdownButtonFormField<String>(
                 value: role,
                 decoration:
