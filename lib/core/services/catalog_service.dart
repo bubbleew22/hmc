@@ -31,6 +31,68 @@ class CatalogService {
     }
   }
 
+  /// Seeds the Google Pixel catalogue (models + storage variants).
+  /// Runs once: skips entirely if any model already exists.
+  /// Model entry: [name, ram].
+  static const _pixelModels = [
+    ['Pixel 4', '6GB'],
+    ['Pixel 4 XL', '6GB'],
+    ['Pixel 4a', '6GB'],
+    ['Pixel 4a (5G)', '6GB'],
+    ['Pixel 5', '8GB'],
+    ['Pixel 5a (5G)', '6GB'],
+    ['Pixel 6', '8GB'],
+    ['Pixel 6 Pro', '12GB'],
+    ['Pixel 6a', '6GB'],
+    ['Pixel 7', '8GB'],
+    ['Pixel 7 Pro', '12GB'],
+    ['Pixel 7a', '8GB'],
+    ['Pixel 8', '8GB'],
+    ['Pixel 8 Pro', '12GB'],
+    ['Pixel 8a', '8GB'],
+    ['Pixel 9', '12GB'],
+    ['Pixel 9 Pro', '16GB'],
+    ['Pixel 9 Pro XL', '16GB'],
+    ['Pixel 9 Pro Fold', '16GB'],
+    ['Pixel 9a', '8GB'],
+    ['Pixel 10', '12GB'],
+    ['Pixel 10 Pro', '16GB'],
+    ['Pixel 10 Pro XL', '16GB'],
+  ];
+
+  static const _pixelStorages = ['128GB', '256GB', '512GB', '1TB'];
+
+  Future<void> seedDefaultModels() async {
+    final countQ = db.selectOnly(db.productModels)
+      ..addColumns([db.productModels.id.count()]);
+    final row = await countQ.getSingle();
+    if ((row.read(db.productModels.id.count()) ?? 0) > 0) return;
+
+    final brand = await (db.select(db.brands)
+          ..where((t) => t.name.equals('Google Pixel')))
+        .getSingleOrNull();
+    if (brand == null) return;
+
+    final now = PkTime.nowEpochMs();
+    for (final m in _pixelModels) {
+      final modelId = newId();
+      await db.into(db.productModels).insert(ProductModelsCompanion(
+        id: Value(modelId),
+        brandId: Value(brand.id),
+        name: Value(m[0]),
+        createdAt: Value(now),
+      ));
+      for (final storage in _pixelStorages) {
+        await db.into(db.productVariants).insert(ProductVariantsCompanion(
+          id: Value(newId()),
+          modelId: Value(modelId),
+          ram: Value(m[1]),
+          storage: Value(storage),
+        ));
+      }
+    }
+  }
+
   Stream<List<Brand>> watchBrands({bool includeArchived = false}) {
     final q = db.select(db.brands)
       ..orderBy([(t) => OrderingTerm.asc(t.sortOrder)]);

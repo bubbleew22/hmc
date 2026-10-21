@@ -64,6 +64,7 @@ class _SetupWizardScreenState extends ConsumerState<SetupWizardScreen> {
       );
       await auth.createAdmin(name: _adminName.text, pin: _pin.text);
       await ref.read(catalogServiceProvider).seedDefaultBrands();
+      await ref.read(catalogServiceProvider).seedDefaultModels();
       await ref.read(expenseServiceProvider).seedCategories();
       syncThemeFromSettings(ref, _theme);
       ref.read(setupDoneProvider.notifier).state = true;

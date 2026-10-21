@@ -33,6 +33,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       final hasUsers = await auth.anyUsers();
       if (done) {
         await catalog.seedDefaultBrands();
+        await catalog.seedDefaultModels();
         await expenses.seedCategories();
       }
       if (!mounted) return;
