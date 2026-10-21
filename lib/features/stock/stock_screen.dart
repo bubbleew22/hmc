@@ -178,39 +178,29 @@ class _StockScreenState extends ConsumerState<StockScreen> {
                         itemCount: batches.length,
                         itemBuilder: (_, i) {
                           final b = batches[i];
-                          return FutureBuilder(
-                            future: ref
-                                .read(catalogServiceProvider)
-                                .getVariant(b.variantId),
-                            builder: (ctx2, vSnap) {
-                              final v = vSnap.data;
-                              return PremiumListRow(
-                                margin: const EdgeInsets.symmetric(
-                                    horizontal: 16, vertical: 5),
-                                leading: const PhoneThumb(size: 48),
-                                title: v != null
-                                    ? '${v.ram}/${v.storage}'
-                                    : 'Batch',
-                                subtitle:
-                                    'Qty: ${b.quantity} · ${Money.format(b.purchasePrice)}/unit',
-                                showChevron: false,
-                                trailing: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 10, vertical: 6),
-                                  decoration: BoxDecoration(
-                                    color: HmcColors.royal
-                                        .withValues(alpha: 0.12),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: Text(
-                                    '${b.quantity} pcs',
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.w800,
-                                        color: HmcColors.royal),
-                                  ),
-                                ),
-                              );
-                            },
+                          return PremiumListRow(
+                            margin: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 5),
+                            leading: const PhoneThumb(size: 48),
+                            title: 'Batch stock',
+                            subtitle:
+                                'Qty: ${b.quantity} · ${Money.format(b.purchasePrice)}/unit',
+                            showChevron: false,
+                            trailing: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: HmcColors.royal
+                                    .withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text(
+                                '${b.quantity} pcs',
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.w800,
+                                    color: HmcColors.royal),
+                              ),
+                            ),
                           );
                         },
                       );

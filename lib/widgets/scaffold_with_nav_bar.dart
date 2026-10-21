@@ -29,12 +29,17 @@ class _ScaffoldWithNavBarState extends State<ScaffoldWithNavBar> {
 
   /// Intercepts the system back button.
   /// Returns true if the pop should proceed (exit app), false to handle it.
-  bool _onBackPressed() {
+  bool _onBackPressed(BuildContext context) {
     final shell = widget.navigationShell;
-    // If we can pop within the current tab's stack, let it pop normally.
-    if (shell.routeMatchList.uri.toString() !=
-        _branchRoot(shell.currentIndex)) {
-      return true; // Let GoRouter handle in-tab back.
+    final currentLocation =
+        GoRouterState.of(context).uri.toString();
+    // If we're not on a tab root (deeper in the stack), let it pop normally.
+    if (currentLocation != _branchRoot(shell.currentIndex)) {
+      // Use GoRouter's pop for in-tab navigation.
+      if (context.canPop()) {
+        context.pop();
+        return false;
+      }
     }
     // On a tab root: if not on Home, go to Home instead of exiting.
     if (shell.currentIndex != 0) {
@@ -74,7 +79,7 @@ class _ScaffoldWithNavBarState extends State<ScaffoldWithNavBar> {
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
         if (didPop) return;
-        if (_onBackPressed()) {
+        if (_onBackPressed(context)) {
           SystemNavigator.pop();
         }
       },
