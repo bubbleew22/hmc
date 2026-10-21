@@ -80,14 +80,14 @@ class _NewDispatchScreenState
           context, ref, picked.variantId, picked.label);
       if (unit == null || !mounted) return;
       final agreed = await _askAgreed(
-          '${picked.label} · ${unit.label}', unit.cost);
+          '${picked.label} · ${unit.label}', unit.suggestedPrice);
       if (agreed == null || !mounted) return;
       setState(() => _lines.add(_DLine(
             unitId: unit.unitId,
             variantId: picked.variantId,
             label: '${picked.label} · ${unit.label}',
             quantity: 1,
-            unitCost: unit.cost,
+            unitCost: unit.suggestedPrice,
             agreedPrice: agreed,
           )));
     } else {

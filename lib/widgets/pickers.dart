@@ -137,8 +137,8 @@ Future<List<InventoryUnit>> availableUnits(
 class PickedUnit {
   final String unitId;
   final String label;
-  final int cost;
-  const PickedUnit(this.unitId, this.label, this.cost);
+  final int suggestedPrice;
+  const PickedUnit(this.unitId, this.label, this.suggestedPrice);
 }
 
 Future<PickedUnit?> pickAvailableUnit(
@@ -154,10 +154,10 @@ Future<PickedUnit?> pickAvailableUnit(
     'Select unit — $variantLabel',
     units,
     (u) =>
-        '${u.imei1 ?? 'No IMEI'} · ${Money.format(u.purchasePrice)} cost',
+        '${u.imei1 ?? 'No IMEI'} · ${Money.format(u.salePrice)}',
   );
   if (picked == null) return null;
-  return PickedUnit(picked.id, picked.imei1 ?? picked.id, picked.purchasePrice);
+  return PickedUnit(picked.id, picked.imei1 ?? picked.id, picked.salePrice);
 }
 
 class PickedBatch {
@@ -184,7 +184,7 @@ Future<PickedBatch?> pickBatch(
     'Select batch',
     batches,
     (b) =>
-        'Qty ${b.quantity} · ${Money.format(b.purchasePrice)} cost each',
+        'Qty ${b.quantity} available',
   );
   if (picked == null) return null;
   return PickedBatch(picked.id, picked.quantity, picked.purchasePrice);

@@ -98,7 +98,7 @@ class _NewSaleScreenState extends ConsumerState<NewSaleScreen> {
       final unit =
           await pickAvailableUnit(context, ref, picked.variantId, picked.label);
       if (unit == null || !mounted) return;
-      final price = await _askPrice(picked.label, unit.cost);
+      final price = await _askPrice(picked.label, unit.suggestedPrice);
       if (price == null || !mounted) return;
       setState(() => _lines.add(_SaleLine(
             unitId: unit.unitId,
@@ -124,8 +124,8 @@ class _NewSaleScreenState extends ConsumerState<NewSaleScreen> {
     }
   }
 
-  Future<int?> _askPrice(String label, int cost) async {
-    final c = TextEditingController(text: Money.toEditable(cost));
+  Future<int?> _askPrice(String label, int suggestedPrice) async {
+    final c = TextEditingController(text: Money.toEditable(suggestedPrice));
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
