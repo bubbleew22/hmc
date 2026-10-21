@@ -40,7 +40,7 @@ import '../../features/stock/add_stock_screen.dart';
 import '../../features/stock/stock_movements_screen.dart';
 import '../../features/stock/stock_screen.dart';
 
-import '../widgets/scaffold_with_nav_bar.dart';
+import '../../widgets/scaffold_with_nav_bar.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final setupDone = ref.watch(setupDoneProvider);

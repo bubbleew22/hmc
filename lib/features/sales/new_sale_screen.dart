@@ -11,6 +11,7 @@ import '../../core/utils/time.dart';
 import '../../data/db/app_database.dart';
 import '../../widgets/common.dart';
 import '../../widgets/pickers.dart';
+import '../../widgets/premium.dart';
 
 class _SaleLine {
   String? unitId;
@@ -516,29 +517,68 @@ class _NewSaleScreenState extends ConsumerState<NewSaleScreen> {
                       MoneyField(
                           controller: _paid,
                           label: 'Payment received'),
+                      const SizedBox(height: 16),
+                      // Premium total banner.
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 14),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              HmcColors.royal,
+                              Color(0xFF0F2470)
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(14),
+                          boxShadow: [
+                            BoxShadow(
+                              color: HmcColors.royal
+                                  .withValues(alpha: 0.3),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisAlignment:
+                              MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Column(
+                              crossAxisAlignment:
+                                  CrossAxisAlignment.start,
+                              children: [
+                                Text('Total Amount',
+                                    style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.white70)),
+                                SizedBox(height: 2),
+                                Text('PAYABLE',
+                                    style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w700,
+                                        color: HmcColors.gold300,
+                                        letterSpacing: 1.5)),
+                              ],
+                            ),
+                            MoneyText(total,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 24,
+                                    color: Colors.white)),
+                          ],
+                        ),
+                      ),
                       const SizedBox(height: 12),
                       Row(
                         mainAxisAlignment:
                             MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text('Total',
+                          const Text('Balance due',
                               style: TextStyle(
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 18,
-                                  color: HmcColors.blue600)),
-                          MoneyText(total,
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 18,
-                                  color: HmcColors.blue600)),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        mainAxisAlignment:
-                            MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text('Balance due'),
+                                  fontWeight: FontWeight.w600)),
                           MoneyText(balance,
                               style: const TextStyle(
                                   fontWeight: FontWeight.w700),
@@ -563,17 +603,42 @@ class _NewSaleScreenState extends ConsumerState<NewSaleScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
-              FilledButton.icon(
-                onPressed: _saving ? null : _save,
-                icon: _saving
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(
-                            strokeWidth: 2, color: Colors.white))
-                    : const Icon(Icons.check),
-                label: const Text('Save Sale'),
+              const SizedBox(height: 20),
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: [
+                    BoxShadow(
+                      color:
+                          HmcColors.royal.withValues(alpha: 0.35),
+                      blurRadius: 16,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
+                ),
+                child: FilledButton.icon(
+                  onPressed: _saving ? null : _save,
+                  icon: _saving
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white))
+                      : const Icon(Icons.check_circle_outline,
+                          size: 22),
+                  label: const Text('Save Sale',
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800)),
+                  style: FilledButton.styleFrom(
+                    minimumSize:
+                        const Size(double.infinity, 56),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                ),
               ),
               const SizedBox(height: 32),
             ],

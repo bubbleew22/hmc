@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/providers.dart';
 import '../../core/theme/app_theme.dart';
 import '../../widgets/common.dart';
+import '../../widgets/premium.dart';
 
 class CustomersScreen extends ConsumerStatefulWidget {
   const CustomersScreen({super.key});
@@ -81,71 +82,95 @@ class _CustomersScreenState extends ConsumerState<CustomersScreen> {
                     final c = rows[i];
                     final avatarColor =
                         _avatarColors[c.name.hashCode.abs() % _avatarColors.length];
-                    return Card(
-                      child: ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor: avatarColor,
-                          child: Text(
-                            _initials(c.name),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w700,
-                            ),
+                    return PremiumListRow(
+                      margin: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 5),
+                      leading: Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              avatarColor,
+                              avatarColor.withValues(alpha: 0.7),
+                            ],
                           ),
-                        ),
-                        title: Text(c.name,
-                            style: const TextStyle(
-                                fontWeight: FontWeight.w600)),
-                        subtitle: c.phone.isEmpty
-                            ? null
-                            : Text(c.phone),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            FutureBuilder(
-                              future: svc.outstandingBalance(c.id),
-                              builder: (ctx2, b) {
-                                if (!b.hasData) {
-                                  return const SizedBox.shrink();
-                                }
-                                final bal = b.data!;
-                                return Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.center,
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.end,
-                                  children: [
-                                    bal > 0
-                                        ? MoneyText(bal,
-                                            style: const TextStyle(
-                                                fontWeight:
-                                                    FontWeight.w700,
-                                                color:
-                                                    HmcColors.danger))
-                                        : const Text('Rs 0',
-                                            style: TextStyle(
-                                                fontWeight:
-                                                    FontWeight.w700,
-                                                color:
-                                                    HmcColors.success)),
-                                    Text(
-                                      bal > 0 ? '(Due)' : '(Clear)',
-                                      style: const TextStyle(
-                                          fontSize: 11,
-                                          color: HmcColors.slate),
-                                    ),
-                                  ],
-                                );
-                              },
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color:
+                                  avatarColor.withValues(alpha: 0.3),
+                              blurRadius: 8,
+                              offset: const Offset(0, 3),
                             ),
-                            const Icon(Icons.chevron_right,
-                                color: HmcColors.slate),
                           ],
                         ),
-                        onTap: () =>
-                            context.push('/customer/${c.id}'),
+                        alignment: Alignment.center,
+                        child: Text(
+                          _initials(c.name),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 16,
+                          ),
+                        ),
                       ),
+                      title: c.name,
+                      subtitle: c.phone.isEmpty ? null : c.phone,
+                      trailing: FutureBuilder(
+                        future: svc.outstandingBalance(c.id),
+                        builder: (ctx2, b) {
+                          if (!b.hasData) {
+                            return const SizedBox.shrink();
+                          }
+                          final bal = b.data!;
+                          return Column(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment:
+                                MainAxisAlignment.center,
+                            crossAxisAlignment:
+                                CrossAxisAlignment.end,
+                            children: [
+                              bal > 0
+                                  ? MoneyText(bal,
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.w800,
+                                          color: HmcColors.danger))
+                                  : const Text('Rs 0',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w800,
+                                          color: HmcColors.success)),
+                              Container(
+                                margin:
+                                    const EdgeInsets.only(top: 3),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: (bal > 0
+                                          ? HmcColors.danger
+                                          : HmcColors.success)
+                                      .withValues(alpha: 0.12),
+                                  borderRadius:
+                                      BorderRadius.circular(10),
+                                ),
+                                child: Text(
+                                  bal > 0 ? 'Due' : 'Clear',
+                                  style: TextStyle(
+                                      fontSize: 10.5,
+                                      fontWeight: FontWeight.w700,
+                                      color: bal > 0
+                                          ? HmcColors.danger
+                                          : HmcColors.success),
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                      onTap: () =>
+                          context.push('/customer/${c.id}'),
                     );
                   },
                 );

@@ -7,6 +7,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/utils/money.dart';
 import '../../widgets/brand_logo.dart';
 import '../../widgets/common.dart';
+import '../../widgets/premium.dart';
 
 /// Inventory overview: search by IMEI/model/brand, filter by status.
 class StockScreen extends ConsumerStatefulWidget {
@@ -98,57 +99,42 @@ class _StockScreenState extends ConsumerState<StockScreen> {
                     final u = units[i];
                     final available = u.status == 'available';
                     final statusColor = _statusColor(u.status);
-                    return Card(
-                      child: ListTile(
-                        leading: const PhoneThumb(size: 48),
-                        title: Text(u.imei1 ?? 'No IMEI',
-                            style: const TextStyle(
-                                fontWeight: FontWeight.w600)),
-                        subtitle: Text(
-                            '${u.status.toUpperCase()} · ${Money.format(u.purchasePrice)}'),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: available
-                                    ? HmcColors.successBg
-                                    : statusColor.withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                available
-                                    ? 'In Stock'
-                                    : u.status.toUpperCase(),
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700,
-                                  color: available
-                                      ? HmcColors.success
-                                      : statusColor,
-                                ),
-                              ),
-                            ),
-                            PopupMenuButton<String>(
-                              onSelected: (v) => _moveUnit(u.id, v),
-                              itemBuilder: (_) => [
-                                for (final s in [
-                                  'available',
-                                  'reserved',
-                                  'dispatched',
-                                  'damaged'
-                                ])
-                                  if (s != u.status)
-                                    PopupMenuItem(
-                                        value: s,
-                                        child: Text(
-                                            'Mark ${s.toUpperCase()}')),
-                              ],
-                            ),
-                          ],
-                        ),
+                    return PremiumListRow(
+                      margin: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 5),
+                      leading: const PhoneThumb(size: 48),
+                      title: u.imei1 ?? 'No IMEI',
+                      subtitle:
+                          '${u.status.toUpperCase()} · ${Money.format(u.purchasePrice)}',
+                      showChevron: false,
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          StatusPill(
+                            label: available
+                                ? 'In Stock'
+                                : u.status.toUpperCase(),
+                            color: available
+                                ? HmcColors.success
+                                : statusColor,
+                          ),
+                          PopupMenuButton<String>(
+                            onSelected: (v) => _moveUnit(u.id, v),
+                            itemBuilder: (_) => [
+                              for (final s in [
+                                'available',
+                                'reserved',
+                                'dispatched',
+                                'damaged'
+                              ])
+                                if (s != u.status)
+                                  PopupMenuItem(
+                                      value: s,
+                                      child: Text(
+                                          'Mark ${s.toUpperCase()}')),
+                            ],
+                          ),
+                        ],
                       ),
                     );
                   },
