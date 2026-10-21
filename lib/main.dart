@@ -1,15 +1,15 @@
 import 'dart:async';
 
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app.dart';
-import 'firebase_options.dart';
 import 'startup_error_app.dart';
 
 /// Hassan Mobile Center — Shewa Adda
-/// Offline-first with Firebase connected (for future cloud sync).
+/// Offline-first. Firebase config files are in place (android/app/
+/// google-services.json, ios/Runner/GoogleService-Info.plist) for future
+/// cloud sync — firebase_core will be re-added then.
 ///
 /// Startup is wrapped in a last-resort error boundary: any uncaught error
 /// while [hmcStartupPhase] is true replaces the app with [StartupErrorApp],
@@ -30,15 +30,7 @@ Future<void> main() async {
     }
   };
 
-  runZonedGuarded(() async {
-    // Initialize Firebase (non-fatal if it fails — app stays offline-first).
-    try {
-      await Firebase.initializeApp(
-        options: DefaultFirebaseOptions.currentPlatform,
-      );
-    } catch (e) {
-      debugPrint('Firebase init failed (offline mode): $e');
-    }
+  runZonedGuarded(() {
     runApp(const ProviderScope(child: HmcApp()));
   }, (error, stack) {
     if (hmcStartupPhase) {

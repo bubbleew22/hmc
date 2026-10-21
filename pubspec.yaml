@@ -19,7 +19,9 @@ dependencies:
   drift: ^2.28.2
   drift_flutter: ^0.2.5
   sqlite3_flutter_libs: ^0.5.42
-  firebase_core: ^3.8.0
+  # NOTE: firebase_core removed 2026-10-21 — its Windows C++ SDK uses
+  # cmake_minimum_required < 3.5 which the CI CMake rejects. Will re-add
+  # with proper platform handling when cloud sync is implemented.
 
   # Utilities
   uuid: ^4.5.1
