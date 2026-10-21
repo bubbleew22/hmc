@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "12325665330",
+    "project_id": "hmc-mobiles",
+    "storage_bucket": "hmc-mobiles.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:12325665330:android:c73dc7647b9fdf0a939a2b",
+        "android_client_info": {
+          "package_name": "com.hasanmobilecenter.shewaadda"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAwLf-JX0_oiJYAVkmDOedetFJd1h9Fs0s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

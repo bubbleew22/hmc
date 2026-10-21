@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>API_KEY</key>
+	<string>AIzaSyCpIR6kja98zpNJL-HdnqbmqeEG6TUoSCM</string>
+	<key>GCM_SENDER_ID</key>
+	<string>12325665330</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.hasanmobilecenter.shewaadda</string>
+	<key>PROJECT_ID</key>
+	<string>hmc-mobiles</string>
+	<key>STORAGE_BUCKET</key>
+	<string>hmc-mobiles.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:12325665330:ios:59659f3c5ea3de37939a2b</string>
+</dict>
+</plist>
