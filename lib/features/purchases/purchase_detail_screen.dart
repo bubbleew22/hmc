@@ -43,6 +43,19 @@ class PurchaseDetailScreen extends ConsumerWidget {
                   _kv('Balance', p.total - p.paid, bold: true),
                   _kv('Method', p.paymentMethod),
                   if (p.notes.isNotEmpty) _kv('Notes', p.notes),
+                  if (p.userId != null)
+                    FutureBuilder(
+                      future: (db.select(db.localUsers)
+                            ..where((t) => t.id.equals(p.userId!)))
+                          .getSingleOrNull(),
+                      builder: (ctx3, uSnap) {
+                        final uname = uSnap.data?.name;
+                        if (uname == null || uname.isEmpty) {
+                          return const SizedBox.shrink();
+                        }
+                        return _kv('Purchased by', uname);
+                      },
+                    ),
                   const SizedBox(height: 16),
                   const Text('Items',
                       style: TextStyle(

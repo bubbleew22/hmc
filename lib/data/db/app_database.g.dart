@@ -5591,6 +5591,15 @@ class $PurchaseInvoicesTable extends PurchaseInvoices
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _purchaseDateMeta = const VerificationMeta(
     'purchaseDate',
   );
@@ -5694,6 +5703,7 @@ class $PurchaseInvoicesTable extends PurchaseInvoices
     id,
     refNo,
     supplierId,
+    userId,
     purchaseDate,
     subtotal,
     discount,
@@ -5736,6 +5746,12 @@ class $PurchaseInvoicesTable extends PurchaseInvoices
       );
     } else if (isInserting) {
       context.missing(_supplierIdMeta);
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
     }
     if (data.containsKey('purchase_date')) {
       context.handle(
@@ -5826,6 +5842,10 @@ class $PurchaseInvoicesTable extends PurchaseInvoices
         DriftSqlType.string,
         data['${effectivePrefix}supplier_id'],
       )!,
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      ),
       purchaseDate: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}purchase_date'],
@@ -5875,6 +5895,7 @@ class PurchaseInvoice extends DataClass implements Insertable<PurchaseInvoice> {
   final String id;
   final String refNo;
   final String supplierId;
+  final String? userId;
   final int purchaseDate;
   final int subtotal;
   final int discount;
@@ -5888,6 +5909,7 @@ class PurchaseInvoice extends DataClass implements Insertable<PurchaseInvoice> {
     required this.id,
     required this.refNo,
     required this.supplierId,
+    this.userId,
     required this.purchaseDate,
     required this.subtotal,
     required this.discount,
@@ -5904,6 +5926,9 @@ class PurchaseInvoice extends DataClass implements Insertable<PurchaseInvoice> {
     map['id'] = Variable<String>(id);
     map['ref_no'] = Variable<String>(refNo);
     map['supplier_id'] = Variable<String>(supplierId);
+    if (!nullToAbsent || userId != null) {
+      map['user_id'] = Variable<String>(userId);
+    }
     map['purchase_date'] = Variable<int>(purchaseDate);
     map['subtotal'] = Variable<int>(subtotal);
     map['discount'] = Variable<int>(discount);
@@ -5921,6 +5946,9 @@ class PurchaseInvoice extends DataClass implements Insertable<PurchaseInvoice> {
       id: Value(id),
       refNo: Value(refNo),
       supplierId: Value(supplierId),
+      userId: userId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(userId),
       purchaseDate: Value(purchaseDate),
       subtotal: Value(subtotal),
       discount: Value(discount),
@@ -5942,6 +5970,7 @@ class PurchaseInvoice extends DataClass implements Insertable<PurchaseInvoice> {
       id: serializer.fromJson<String>(json['id']),
       refNo: serializer.fromJson<String>(json['refNo']),
       supplierId: serializer.fromJson<String>(json['supplierId']),
+      userId: serializer.fromJson<String?>(json['userId']),
       purchaseDate: serializer.fromJson<int>(json['purchaseDate']),
       subtotal: serializer.fromJson<int>(json['subtotal']),
       discount: serializer.fromJson<int>(json['discount']),
@@ -5960,6 +5989,7 @@ class PurchaseInvoice extends DataClass implements Insertable<PurchaseInvoice> {
       'id': serializer.toJson<String>(id),
       'refNo': serializer.toJson<String>(refNo),
       'supplierId': serializer.toJson<String>(supplierId),
+      'userId': serializer.toJson<String?>(userId),
       'purchaseDate': serializer.toJson<int>(purchaseDate),
       'subtotal': serializer.toJson<int>(subtotal),
       'discount': serializer.toJson<int>(discount),
@@ -5976,6 +6006,7 @@ class PurchaseInvoice extends DataClass implements Insertable<PurchaseInvoice> {
     String? id,
     String? refNo,
     String? supplierId,
+    Value<String?> userId = const Value.absent(),
     int? purchaseDate,
     int? subtotal,
     int? discount,
@@ -5989,6 +6020,7 @@ class PurchaseInvoice extends DataClass implements Insertable<PurchaseInvoice> {
     id: id ?? this.id,
     refNo: refNo ?? this.refNo,
     supplierId: supplierId ?? this.supplierId,
+    userId: userId.present ? userId.value : this.userId,
     purchaseDate: purchaseDate ?? this.purchaseDate,
     subtotal: subtotal ?? this.subtotal,
     discount: discount ?? this.discount,
@@ -6006,6 +6038,7 @@ class PurchaseInvoice extends DataClass implements Insertable<PurchaseInvoice> {
       supplierId: data.supplierId.present
           ? data.supplierId.value
           : this.supplierId,
+      userId: data.userId.present ? data.userId.value : this.userId,
       purchaseDate: data.purchaseDate.present
           ? data.purchaseDate.value
           : this.purchaseDate,
@@ -6028,6 +6061,7 @@ class PurchaseInvoice extends DataClass implements Insertable<PurchaseInvoice> {
           ..write('id: $id, ')
           ..write('refNo: $refNo, ')
           ..write('supplierId: $supplierId, ')
+          ..write('userId: $userId, ')
           ..write('purchaseDate: $purchaseDate, ')
           ..write('subtotal: $subtotal, ')
           ..write('discount: $discount, ')
@@ -6046,6 +6080,7 @@ class PurchaseInvoice extends DataClass implements Insertable<PurchaseInvoice> {
     id,
     refNo,
     supplierId,
+    userId,
     purchaseDate,
     subtotal,
     discount,
@@ -6063,6 +6098,7 @@ class PurchaseInvoice extends DataClass implements Insertable<PurchaseInvoice> {
           other.id == this.id &&
           other.refNo == this.refNo &&
           other.supplierId == this.supplierId &&
+          other.userId == this.userId &&
           other.purchaseDate == this.purchaseDate &&
           other.subtotal == this.subtotal &&
           other.discount == this.discount &&
@@ -6078,6 +6114,7 @@ class PurchaseInvoicesCompanion extends UpdateCompanion<PurchaseInvoice> {
   final Value<String> id;
   final Value<String> refNo;
   final Value<String> supplierId;
+  final Value<String?> userId;
   final Value<int> purchaseDate;
   final Value<int> subtotal;
   final Value<int> discount;
@@ -6092,6 +6129,7 @@ class PurchaseInvoicesCompanion extends UpdateCompanion<PurchaseInvoice> {
     this.id = const Value.absent(),
     this.refNo = const Value.absent(),
     this.supplierId = const Value.absent(),
+    this.userId = const Value.absent(),
     this.purchaseDate = const Value.absent(),
     this.subtotal = const Value.absent(),
     this.discount = const Value.absent(),
@@ -6107,6 +6145,7 @@ class PurchaseInvoicesCompanion extends UpdateCompanion<PurchaseInvoice> {
     required String id,
     required String refNo,
     required String supplierId,
+    this.userId = const Value.absent(),
     required int purchaseDate,
     required int subtotal,
     this.discount = const Value.absent(),
@@ -6128,6 +6167,7 @@ class PurchaseInvoicesCompanion extends UpdateCompanion<PurchaseInvoice> {
     Expression<String>? id,
     Expression<String>? refNo,
     Expression<String>? supplierId,
+    Expression<String>? userId,
     Expression<int>? purchaseDate,
     Expression<int>? subtotal,
     Expression<int>? discount,
@@ -6143,6 +6183,7 @@ class PurchaseInvoicesCompanion extends UpdateCompanion<PurchaseInvoice> {
       if (id != null) 'id': id,
       if (refNo != null) 'ref_no': refNo,
       if (supplierId != null) 'supplier_id': supplierId,
+      if (userId != null) 'user_id': userId,
       if (purchaseDate != null) 'purchase_date': purchaseDate,
       if (subtotal != null) 'subtotal': subtotal,
       if (discount != null) 'discount': discount,
@@ -6160,6 +6201,7 @@ class PurchaseInvoicesCompanion extends UpdateCompanion<PurchaseInvoice> {
     Value<String>? id,
     Value<String>? refNo,
     Value<String>? supplierId,
+    Value<String?>? userId,
     Value<int>? purchaseDate,
     Value<int>? subtotal,
     Value<int>? discount,
@@ -6175,6 +6217,7 @@ class PurchaseInvoicesCompanion extends UpdateCompanion<PurchaseInvoice> {
       id: id ?? this.id,
       refNo: refNo ?? this.refNo,
       supplierId: supplierId ?? this.supplierId,
+      userId: userId ?? this.userId,
       purchaseDate: purchaseDate ?? this.purchaseDate,
       subtotal: subtotal ?? this.subtotal,
       discount: discount ?? this.discount,
@@ -6199,6 +6242,9 @@ class PurchaseInvoicesCompanion extends UpdateCompanion<PurchaseInvoice> {
     }
     if (supplierId.present) {
       map['supplier_id'] = Variable<String>(supplierId.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
     }
     if (purchaseDate.present) {
       map['purchase_date'] = Variable<int>(purchaseDate.value);
@@ -6239,6 +6285,7 @@ class PurchaseInvoicesCompanion extends UpdateCompanion<PurchaseInvoice> {
           ..write('id: $id, ')
           ..write('refNo: $refNo, ')
           ..write('supplierId: $supplierId, ')
+          ..write('userId: $userId, ')
           ..write('purchaseDate: $purchaseDate, ')
           ..write('subtotal: $subtotal, ')
           ..write('discount: $discount, ')
@@ -17172,6 +17219,7 @@ typedef $$PurchaseInvoicesTableCreateCompanionBuilder =
       required String id,
       required String refNo,
       required String supplierId,
+      Value<String?> userId,
       required int purchaseDate,
       required int subtotal,
       Value<int> discount,
@@ -17188,6 +17236,7 @@ typedef $$PurchaseInvoicesTableUpdateCompanionBuilder =
       Value<String> id,
       Value<String> refNo,
       Value<String> supplierId,
+      Value<String?> userId,
       Value<int> purchaseDate,
       Value<int> subtotal,
       Value<int> discount,
@@ -17221,6 +17270,11 @@ class $$PurchaseInvoicesTableFilterComposer
 
   ColumnFilters<String> get supplierId => $composableBuilder(
     column: $table.supplierId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get userId => $composableBuilder(
+    column: $table.userId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -17294,6 +17348,11 @@ class $$PurchaseInvoicesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get purchaseDate => $composableBuilder(
     column: $table.purchaseDate,
     builder: (column) => ColumnOrderings(column),
@@ -17359,6 +17418,9 @@ class $$PurchaseInvoicesTableAnnotationComposer
     column: $table.supplierId,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get userId =>
+      $composableBuilder(column: $table.userId, builder: (column) => column);
 
   GeneratedColumn<int> get purchaseDate => $composableBuilder(
     column: $table.purchaseDate,
@@ -17432,6 +17494,7 @@ class $$PurchaseInvoicesTableTableManager
                 Value<String> id = const Value.absent(),
                 Value<String> refNo = const Value.absent(),
                 Value<String> supplierId = const Value.absent(),
+                Value<String?> userId = const Value.absent(),
                 Value<int> purchaseDate = const Value.absent(),
                 Value<int> subtotal = const Value.absent(),
                 Value<int> discount = const Value.absent(),
@@ -17446,6 +17509,7 @@ class $$PurchaseInvoicesTableTableManager
                 id: id,
                 refNo: refNo,
                 supplierId: supplierId,
+                userId: userId,
                 purchaseDate: purchaseDate,
                 subtotal: subtotal,
                 discount: discount,
@@ -17462,6 +17526,7 @@ class $$PurchaseInvoicesTableTableManager
                 required String id,
                 required String refNo,
                 required String supplierId,
+                Value<String?> userId = const Value.absent(),
                 required int purchaseDate,
                 required int subtotal,
                 Value<int> discount = const Value.absent(),
@@ -17476,6 +17541,7 @@ class $$PurchaseInvoicesTableTableManager
                 id: id,
                 refNo: refNo,
                 supplierId: supplierId,
+                userId: userId,
                 purchaseDate: purchaseDate,
                 subtotal: subtotal,
                 discount: discount,

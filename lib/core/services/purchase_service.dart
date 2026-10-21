@@ -87,6 +87,7 @@ class PurchaseService {
           id: Value(id),
           refNo: Value(refNo),
           supplierId: Value(supplierId),
+          userId: Value(userId),
           purchaseDate: Value(purchaseDate),
           subtotal: Value(subtotal),
           discount: Value(discount),

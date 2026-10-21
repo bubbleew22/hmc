@@ -8,7 +8,7 @@ class AppConfig {
   static const String appTagline = 'Smart Mobile Business Management';
   static const String packageName = 'com.hasanmobilecenter.shewaadda';
   static const String version = '1.0.0';
-  static const int dbVersion = 1;
+  static const int dbVersion = 2;
 
   static const String defaultCurrency = 'PKR';
   static const String currencySymbol = 'Rs';

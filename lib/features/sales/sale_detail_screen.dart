@@ -77,6 +77,20 @@ class SaleDetailScreen extends ConsumerWidget {
                             _kv('Warranty', inv.warranty),
                           if (inv.notes.isNotEmpty)
                             _kv('Notes', inv.notes),
+                          if (inv.userId != null)
+                            FutureBuilder(
+                              future: (db.select(db.localUsers)
+                                    ..where(
+                                        (t) => t.id.equals(inv.userId!)))
+                                  .getSingleOrNull(),
+                              builder: (ctx3, uSnap) {
+                                final uname = uSnap.data?.name;
+                                if (uname == null || uname.isEmpty) {
+                                  return const SizedBox.shrink();
+                                }
+                                return _kv('Sold by', uname);
+                              },
+                            ),
                         ],
                       ),
                     ),

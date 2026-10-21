@@ -162,6 +162,7 @@ class PurchaseInvoices extends Table {
   TextColumn get id => text()();
   TextColumn get refNo => text().unique()();
   TextColumn get supplierId => text().references(Suppliers, #id)();
+  TextColumn get userId => text().nullable()();
   IntColumn get purchaseDate => integer()();
   IntColumn get subtotal => integer()();
   IntColumn get discount => integer().withDefault(const Constant(0))();

@@ -62,7 +62,10 @@ class AppDatabase extends _$AppDatabase {
   MigrationStrategy get migration => MigrationStrategy(
         onCreate: (m) async => m.createAll(),
         onUpgrade: (m, from, to) async {
-          // v1 is the first release; future versions add stepwise migrations.
+          // v1 → v2: add userId (operator attribution) to purchase_invoices.
+          if (from < 2) {
+            await m.addColumn(purchaseInvoices, purchaseInvoices.userId);
+          }
         },
         beforeOpen: (details) async {
           await customStatement('PRAGMA foreign_keys = ON');
