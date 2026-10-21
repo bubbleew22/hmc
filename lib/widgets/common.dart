@@ -124,10 +124,10 @@ class StatCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.12),
+                    color: color,
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Icon(icon, color: color, size: 20),
+                  child: Icon(icon, color: Colors.white, size: 20),
                 ),
                 const Spacer(),
                 if (onTap != null)
@@ -136,14 +136,14 @@ class StatCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 10),
-            MoneyText(minor,
-                style:
-                    const TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
-            const SizedBox(height: 2),
             Text(label,
                 style: TextStyle(
                     fontSize: 12,
                     color: Theme.of(context).colorScheme.onSurfaceVariant)),
+            const SizedBox(height: 2),
+            MoneyText(minor,
+                style:
+                    const TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
           ],
         ),
       ),
@@ -183,10 +183,10 @@ class CountCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.12),
+                  color: color,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(icon, color: color, size: 20),
+                child: Icon(icon, color: Colors.white, size: 20),
               ),
               const Spacer(),
               if (onTap != null)
@@ -194,14 +194,14 @@ class CountCard extends StatelessWidget {
                     color: Theme.of(context).colorScheme.onSurfaceVariant),
             ]),
             const SizedBox(height: 10),
-            Text(value,
-                style:
-                    const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
-            const SizedBox(height: 2),
             Text(label,
                 style: TextStyle(
                     fontSize: 12,
                     color: Theme.of(context).colorScheme.onSurfaceVariant)),
+            const SizedBox(height: 2),
+            Text(value,
+                style:
+                    const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
           ],
         ),
       ),

@@ -40,6 +40,8 @@ import '../../features/stock/add_stock_screen.dart';
 import '../../features/stock/stock_movements_screen.dart';
 import '../../features/stock/stock_screen.dart';
 
+import '../widgets/scaffold_with_nav_bar.dart';
+
 final routerProvider = Provider<GoRouter>((ref) {
   final setupDone = ref.watch(setupDoneProvider);
   final usersExist = ref.watch(usersExistProvider);
@@ -65,7 +67,33 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/splash', builder: (_, __) => const SplashScreen()),
       GoRoute(path: '/setup', builder: (_, __) => const SetupWizardScreen()),
       GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
-      GoRoute(path: '/home', builder: (_, __) => const HomeScreen()),
+      // ── Main tabs: each keeps its own navigation stack so the system
+      // back button returns to the previous screen instead of closing the app.
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) =>
+            ScaffoldWithNavBar(navigationShell: navigationShell),
+        branches: [
+          StatefulShellBranch(routes: [
+            GoRoute(path: '/home', builder: (_, __) => const HomeScreen()),
+          ]),
+          StatefulShellBranch(routes: [
+            GoRoute(path: '/stock', builder: (_, __) => const StockScreen()),
+          ]),
+          StatefulShellBranch(routes: [
+            GoRoute(
+                path: '/sales', builder: (_, __) => const SalesHistoryScreen()),
+          ]),
+          StatefulShellBranch(routes: [
+            GoRoute(
+                path: '/customers',
+                builder: (_, __) => const CustomersScreen()),
+          ]),
+          StatefulShellBranch(routes: [
+            GoRoute(
+                path: '/settings', builder: (_, __) => const SettingsScreen()),
+          ]),
+        ],
+      ),
       // Catalogue
       GoRoute(path: '/brands', builder: (_, __) => const BrandsScreen()),
       GoRoute(
@@ -82,7 +110,6 @@ final routerProvider = Provider<GoRouter>((ref) {
             VariantDetailScreen(variantId: s.pathParameters['id']!),
       ),
       // Stock
-      GoRoute(path: '/stock', builder: (_, __) => const StockScreen()),
       GoRoute(path: '/stock/add', builder: (_, __) => const AddStockScreen()),
       GoRoute(
           path: '/stock/movements',
@@ -102,7 +129,6 @@ final routerProvider = Provider<GoRouter>((ref) {
           path: '/suppliers', builder: (_, __) => const SuppliersScreen()),
       // Sales
       GoRoute(path: '/sale/new', builder: (_, __) => const NewSaleScreen()),
-      GoRoute(path: '/sales', builder: (_, __) => const SalesHistoryScreen()),
       GoRoute(
         path: '/sale/:id',
         builder: (_, s) => SaleDetailScreen(saleId: s.pathParameters['id']!),
@@ -113,8 +139,6 @@ final routerProvider = Provider<GoRouter>((ref) {
             ReceiptPreviewScreen(saleId: s.pathParameters['id']!),
       ),
       // Customers
-      GoRoute(
-          path: '/customers', builder: (_, __) => const CustomersScreen()),
       GoRoute(
           path: '/customer/new',
           builder: (_, __) => const AddEditCustomerScreen()),
@@ -162,7 +186,6 @@ final routerProvider = Provider<GoRouter>((ref) {
         ),
       ),
       // Settings
-      GoRoute(path: '/settings', builder: (_, __) => const SettingsScreen()),
       GoRoute(
           path: '/settings/users', builder: (_, __) => const UsersScreen()),
       GoRoute(

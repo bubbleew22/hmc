@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import '../../core/providers.dart';
 import '../../core/theme/app_theme.dart';
 import '../../widgets/common.dart';
-import '../../widgets/hmc_bottom_nav.dart';
 
 class CustomersScreen extends ConsumerStatefulWidget {
   const CustomersScreen({super.key});
@@ -37,7 +36,6 @@ class _CustomersScreenState extends ConsumerState<CustomersScreen> {
     final svc = ref.watch(customerServiceProvider);
     return Scaffold(
       appBar: AppBar(title: const Text('Customers')),
-      bottomNavigationBar: const HmcBottomNav(currentIndex: 3),
       floatingActionButton: ref.canSell
           ? FloatingActionButton(
               onPressed: () => context.push('/customer/new'),

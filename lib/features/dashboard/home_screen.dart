@@ -9,8 +9,8 @@ import '../../core/providers.dart';
 import '../../core/services/report_service.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/time.dart';
+import '../../widgets/brand_logo.dart';
 import '../../widgets/common.dart';
-import '../../widgets/hmc_bottom_nav.dart';
 
 /// Home dashboard.
 /// Back from Home asks to exit the app.
@@ -39,7 +39,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       },
       child: const Scaffold(
         body: _Dashboard(),
-        bottomNavigationBar: HmcBottomNav(currentIndex: 0),
       ),
     );
   }
@@ -474,20 +473,17 @@ class _TopBrandsCard extends ConsumerWidget {
   }
 
   Widget _brandRow(BrandPoint b, int maxTotal, int monthSum) {
-    final color = HmcColors.brandColor(b.brand);
     final share =
         monthSum == 0 ? 0 : (100 * b.total / monthSum).round();
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: 14),
       child: Column(
         children: [
           Row(
             children: [
-              Container(
-                width: 10,
-                height: 10,
-                decoration:
-                    BoxDecoration(color: color, shape: BoxShape.circle),
+              SizedBox(
+                width: 56,
+                child: BrandLogo(brandName: b.brand, height: 26),
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -508,12 +504,15 @@ class _TopBrandsCard extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 6),
-          LinearProgressIndicator(
-            value: maxTotal == 0 ? 0 : b.total / maxTotal,
-            color: HmcColors.blue600,
-            backgroundColor: HmcColors.slateBg,
-            borderRadius: BorderRadius.circular(4),
-            minHeight: 6,
+          Padding(
+            padding: const EdgeInsets.only(left: 66),
+            child: LinearProgressIndicator(
+              value: maxTotal == 0 ? 0 : b.total / maxTotal,
+              color: HmcColors.blue600,
+              backgroundColor: HmcColors.slateBg,
+              borderRadius: BorderRadius.circular(4),
+              minHeight: 6,
+            ),
           ),
         ],
       ),

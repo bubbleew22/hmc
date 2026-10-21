@@ -5,8 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../../core/providers.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/money.dart';
+import '../../widgets/brand_logo.dart';
 import '../../widgets/common.dart';
-import '../../widgets/hmc_bottom_nav.dart';
 
 /// Inventory overview: search by IMEI/model/brand, filter by status.
 class StockScreen extends ConsumerStatefulWidget {
@@ -44,7 +44,6 @@ class _StockScreenState extends ConsumerState<StockScreen> {
           ),
         ],
       ),
-      bottomNavigationBar: const HmcBottomNav(currentIndex: 1),
       body: Column(
         children: [
           SearchField(
@@ -101,15 +100,7 @@ class _StockScreenState extends ConsumerState<StockScreen> {
                     final statusColor = _statusColor(u.status);
                     return Card(
                       child: ListTile(
-                        leading: Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: HmcColors.slateBg,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: const Icon(Icons.smartphone,
-                              color: HmcColors.royal),
-                        ),
+                        leading: const PhoneThumb(size: 48),
                         title: Text(u.imei1 ?? 'No IMEI',
                             style: const TextStyle(
                                 fontWeight: FontWeight.w600)),

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/providers.dart';
 import '../../core/theme/app_theme.dart';
+import '../../widgets/brand_logo.dart';
 import '../../widgets/common.dart';
 
 class BrandsScreen extends ConsumerStatefulWidget {
@@ -96,63 +97,16 @@ class _BrandsScreenState extends ConsumerState<BrandsScreen> {
                     if (i >= brands.length) return _addTile();
                     final b = brands[i];
                     final archived = b.isArchived == 1;
-                    final color = archived
-                        ? HmcColors.slate
-                        : HmcColors.brandColor(b.name);
-                    return Card(
-                      margin: const EdgeInsets.all(4),
-                      child: Stack(
-                        children: [
-                          Positioned.fill(
-                            child: InkWell(
-                              borderRadius: BorderRadius.circular(16),
-                              onTap: () =>
-                                  context.push('/brand/${b.id}'),
-                              child: Padding(
-                                padding: const EdgeInsets.fromLTRB(
-                                    8, 28, 8, 12),
-                                child: Column(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      b.name,
-                                      textAlign: TextAlign.center,
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w700,
-                                        color: color,
-                                        decoration: archived
-                                            ? TextDecoration.lineThrough
-                                            : null,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    StreamBuilder(
-                                      stream: catalog
-                                          .watchModels(b.id),
-                                      builder: (ctx2, ms) => Text(
-                                        ms.hasData
-                                            ? '${ms.data!.length} Models'
-                                            : '…',
-                                        style: const TextStyle(
-                                          fontSize: 12,
-                                          color: HmcColors.slate,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                          if (isAdmin)
-                            Positioned(
-                              top: 2,
-                              right: 2,
-                              child: PopupMenuButton<String>(
+                    return StreamBuilder(
+                      stream: catalog.watchModels(b.id),
+                      builder: (ctx2, ms) => BrandTile(
+                        brandName: b.name,
+                        modelCount:
+                            ms.hasData ? ms.data!.length : 0,
+                        archived: archived,
+                        onTap: () => context.push('/brand/${b.id}'),
+                        trailingMenu: isAdmin
+                            ? PopupMenuButton<String>(
                                 iconSize: 20,
                                 padding: EdgeInsets.zero,
                                 onSelected: (v) => _onMenu(
@@ -167,9 +121,8 @@ class _BrandsScreenState extends ConsumerState<BrandsScreen> {
                                           ? 'Unarchive'
                                           : 'Archive')),
                                 ],
-                              ),
-                            ),
-                        ],
+                              )
+                            : null,
                       ),
                     );
                   },

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/providers.dart';
 import '../../core/utils/validators.dart';
+import '../../widgets/brand_logo.dart';
 import '../../widgets/common.dart';
 
 class BrandDetailScreen extends ConsumerWidget {
@@ -39,7 +40,7 @@ class BrandDetailScreen extends ConsumerWidget {
               final m = models[i];
               return Card(
                 child: ListTile(
-                  leading: const Icon(Icons.smartphone_outlined),
+                  leading: const PhoneThumb(size: 44),
                   title: Text(m.name,
                       style: const TextStyle(fontWeight: FontWeight.w600)),
                   trailing: const Icon(Icons.chevron_right),

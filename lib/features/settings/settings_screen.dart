@@ -8,7 +8,6 @@ import '../../core/share/whatsapp.dart';
 import '../../core/theme/app_theme.dart';
 import '../../data/db/app_database.dart';
 import '../../widgets/common.dart';
-import '../../widgets/hmc_bottom_nav.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -18,7 +17,6 @@ class SettingsScreen extends ConsumerWidget {
     final db = ref.watch(databaseProvider);
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
-      bottomNavigationBar: const HmcBottomNav(currentIndex: 4),
       body: FutureBuilder(
         future: db.readSettings(),
         builder: (ctx, snap) {
