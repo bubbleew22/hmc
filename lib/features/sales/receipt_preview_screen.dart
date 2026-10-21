@@ -80,10 +80,16 @@ class _ReceiptPreviewScreenState
               .getSingleOrNull();
           imei = unit?.imei1 ?? '';
         }
+        final brandName = brand?.name ?? '';
+        final modelName = model?.name ?? '';
+        // Avoid duplication like "Google Pixel Pixel 7 Pro":
+        // if model already starts with brand, use model alone.
+        final fullName = modelName.toLowerCase().startsWith(brandName.toLowerCase())
+            ? modelName
+            : '$brandName $modelName'.trim();
         final title = variant == null
             ? 'Item'
-            : CatalogService.variantLabel(
-                variant, '${brand?.name ?? ''} ${model?.name ?? ''}'.trim());
+            : CatalogService.variantLabel(variant, fullName);
         labels.add(ItemLabel(title: title, imei: imei));
       }
 

@@ -262,6 +262,12 @@ class StockService {
             ..orderBy([(t) => OrderingTerm.asc(t.createdAt)]))
           .watch();
 
+  /// Watches all batches (for the Stock screen).
+  Stream<List<StockBatche>> watchAllBatches() =>
+      (db.select(db.stockBatches)
+            ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]))
+          .watch();
+
   // ── Movements ──
 
   Future<List<StockMovement>> movementHistory(

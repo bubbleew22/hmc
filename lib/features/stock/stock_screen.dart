@@ -20,6 +20,7 @@ class StockScreen extends ConsumerStatefulWidget {
 class _StockScreenState extends ConsumerState<StockScreen> {
   String _query = '';
   String _status = 'all';
+  String _view = 'units'; // 'units' | 'batches'
 
   static const statuses = [
     'all',
@@ -68,8 +69,27 @@ class _StockScreenState extends ConsumerState<StockScreen> {
               ],
             ),
           ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            child: Row(
+              children: [
+                ChoiceChip(
+                  label: const Text('Units'),
+                  selected: _view == 'units',
+                  onSelected: (_) => setState(() => _view = 'units'),
+                ),
+                const SizedBox(width: 8),
+                ChoiceChip(
+                  label: const Text('Batches'),
+                  selected: _view == 'batches',
+                  onSelected: (_) => setState(() => _view = 'batches'),
+                ),
+              ],
+            ),
+          ),
           Expanded(
-            child: StreamBuilder(
+            child: _view == 'units'
+                ? StreamBuilder(
               stream: stock.watchUnits(
                   status: _status == 'all' ? null : _status),
               builder: (ctx, snap) {
@@ -140,7 +160,62 @@ class _StockScreenState extends ConsumerState<StockScreen> {
                   },
                 );
               },
-            ),
+            )
+                : StreamBuilder(
+                    stream: stock.watchAllBatches(),
+                    builder: (ctx, snap) {
+                      if (!snap.hasData) return const LoadingView();
+                      final batches = snap.data!;
+                      if (batches.isEmpty) {
+                        return const EmptyState(
+                          icon: Icons.inventory_2_outlined,
+                          title: 'No batches found',
+                          subtitle:
+                              'Batches are bulk stock added without IMEI numbers.',
+                        );
+                      }
+                      return ListView.builder(
+                        itemCount: batches.length,
+                        itemBuilder: (_, i) {
+                          final b = batches[i];
+                          return FutureBuilder(
+                            future: ref
+                                .read(catalogServiceProvider)
+                                .getVariant(b.variantId),
+                            builder: (ctx2, vSnap) {
+                              final v = vSnap.data;
+                              return PremiumListRow(
+                                margin: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 5),
+                                leading: const PhoneThumb(size: 48),
+                                title: v != null
+                                    ? '${v.ram}/${v.storage}'
+                                    : 'Batch',
+                                subtitle:
+                                    'Qty: ${b.quantity} · ${Money.format(b.purchasePrice)}/unit',
+                                showChevron: false,
+                                trailing: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color: HmcColors.royal
+                                        .withValues(alpha: 0.12),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Text(
+                                    '${b.quantity} pcs',
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.w800,
+                                        color: HmcColors.royal),
+                                  ),
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      );
+                    },
+                  ),
           ),
           if (ref.canEditStock)
             SafeArea(

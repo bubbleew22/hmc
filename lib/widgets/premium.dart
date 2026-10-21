@@ -44,13 +44,17 @@ class PremiumCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final card = Container(
       margin: margin,
       padding: padding,
       decoration: BoxDecoration(
-        color: color ?? Colors.white,
+        color: color ?? (isDark ? const Color(0xFF1E2A4A) : Colors.white),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE8EDF5)),
+        border: Border.all(
+            color: isDark
+                ? const Color(0xFF2A3A5F)
+                : const Color(0xFFE8EDF5)),
         boxShadow: const [PremiumShadows.card],
       ),
       child: child,
@@ -435,6 +439,7 @@ class PremiumListRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return PremiumCard(
       margin: margin,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -463,9 +468,11 @@ class PremiumListRow extends StatelessWidget {
                     padding: const EdgeInsets.only(top: 3),
                     child: Text(
                       subtitle!,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12.5,
-                        color: HmcColors.slate,
+                        color: isDark
+                            ? const Color(0xFFB0BECF)
+                            : HmcColors.slate,
                       ),
                     ),
                   ),
