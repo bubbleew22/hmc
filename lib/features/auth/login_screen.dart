@@ -3,9 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/providers.dart';
+import '../../core/services/firebase_auth_service.dart';
 import '../../core/theme/app_theme.dart';
 
-/// Local PIN login / lock screen.
+/// Login screen with PIN (offline) and Online (Firebase) options.
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
@@ -16,13 +17,18 @@ class LoginScreen extends ConsumerStatefulWidget {
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _name = TextEditingController();
   final _pin = TextEditingController();
+  final _email = TextEditingController();
+  final _password = TextEditingController();
   bool _busy = false;
   String? _error;
+  bool _onlineMode = false;
 
   @override
   void dispose() {
     _name.dispose();
     _pin.dispose();
+    _email.dispose();
+    _password.dispose();
     super.dispose();
   }
 
@@ -32,18 +38,53 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       _error = null;
     });
     try {
-      final session =
-          await ref.read(authServiceProvider).login(_name.text, _pin.text);
-      if (session == null) {
-        setState(() => _error = 'Wrong name or PIN. Try again.');
+      if (_onlineMode) {
+        await _loginOnline();
       } else {
-        ref.read(sessionProvider.notifier).state = session;
-        if (mounted) context.go('/home');
+        await _loginPin();
       }
     } catch (e) {
-      setState(() => _error = 'Login failed. Try again.');
+      setState(() => _error = e.toString());
     } finally {
       if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _loginPin() async {
+    final session =
+        await ref.read(authServiceProvider).login(_name.text, _pin.text);
+    if (session == null) {
+      setState(() => _error = 'Wrong name or PIN. Try again.');
+    } else {
+      ref.read(sessionProvider.notifier).state = session;
+      if (mounted) context.go('/home');
+    }
+  }
+
+  Future<void> _loginOnline() async {
+    final fbAuth = FirebaseAuthService();
+    final user = await fbAuth.signIn(
+      email: _email.text,
+      password: _password.text,
+    );
+    // Link Firebase user to local user (or create local record).
+    final auth = ref.read(authServiceProvider);
+    final localUser = await auth.findByFirebaseUid(user.uid);
+    if (localUser == null) {
+      // First online login — create local user linked to Firebase.
+      // Admin must have created this account; we just link it locally.
+      await auth.linkFirebaseUser(
+        firebaseUid: user.uid,
+        email: user.email ?? _email.text,
+        name: user.displayName ?? _email.text.split('@').first,
+      );
+    }
+    final session = await auth.loginWithFirebaseUid(user.uid);
+    if (session == null) {
+      setState(() => _error = 'Account not set up on this device. Contact admin.');
+    } else {
+      ref.read(sessionProvider.notifier).state = session;
+      if (mounted) context.go('/home');
     }
   }
 
@@ -88,22 +129,65 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               color: HmcColors.gold600,
                               fontWeight: FontWeight.w600)),
                       const SizedBox(height: 24),
-                      TextField(
-                        controller: _name,
-                        decoration:
-                            const InputDecoration(labelText: 'User name'),
-                        textInputAction: TextInputAction.next,
+                      // PIN / Online toggle
+                      SegmentedButton<bool>(
+                        segments: const [
+                          ButtonSegment(
+                              value: false,
+                              label: Text('PIN'),
+                              icon: Icon(Icons.pin_outlined)),
+                          ButtonSegment(
+                              value: true,
+                              label: Text('Online'),
+                              icon: Icon(Icons.cloud_outlined)),
+                        ],
+                        selected: {_onlineMode},
+                        onSelectionChanged: (s) =>
+                            setState(() => _onlineMode = s.first),
                       ),
-                      const SizedBox(height: 12),
-                      TextField(
-                        controller: _pin,
-                        decoration:
-                            const InputDecoration(labelText: 'PIN'),
-                        keyboardType: TextInputType.number,
-                        obscureText: true,
-                        textInputAction: TextInputAction.done,
-                        onSubmitted: (_) => _login(),
-                      ),
+                      const SizedBox(height: 16),
+                      if (!_onlineMode) ...[
+                        TextField(
+                          controller: _name,
+                          decoration:
+                              const InputDecoration(labelText: 'User name'),
+                          textInputAction: TextInputAction.next,
+                        ),
+                        const SizedBox(height: 12),
+                        TextField(
+                          controller: _pin,
+                          decoration:
+                              const InputDecoration(labelText: 'PIN'),
+                          keyboardType: TextInputType.number,
+                          obscureText: true,
+                          textInputAction: TextInputAction.done,
+                          onSubmitted: (_) => _login(),
+                        ),
+                      ] else ...[
+                        TextField(
+                          controller: _email,
+                          decoration:
+                              const InputDecoration(labelText: 'Email'),
+                          keyboardType: TextInputType.emailAddress,
+                          textInputAction: TextInputAction.next,
+                        ),
+                        const SizedBox(height: 12),
+                        TextField(
+                          controller: _password,
+                          decoration:
+                              const InputDecoration(labelText: 'Password'),
+                          obscureText: true,
+                          textInputAction: TextInputAction.done,
+                          onSubmitted: (_) => _login(),
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Online login syncs your account across devices.',
+                          style: TextStyle(
+                              fontSize: 12, color: Colors.grey),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
                       if (_error != null) ...[
                         const SizedBox(height: 12),
                         Text(_error!,

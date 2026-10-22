@@ -100,6 +100,50 @@ class AuthService {
     return Session(userId: user.id, name: user.name, role: user.role);
   }
 
+  /// Finds a local user by Firebase UID.
+  Future<LocalUser?> findByFirebaseUid(String firebaseUid) async {
+    return (db.select(db.localUsers)
+          ..where((t) => t.firebaseUid.equals(firebaseUid)))
+        .getSingleOrNull();
+  }
+
+  /// Links a Firebase account to a local user (creates local record if needed).
+  /// Used on first online login from a new device.
+  Future<LocalUser> linkFirebaseUser({
+    required String firebaseUid,
+    required String email,
+    required String name,
+  }) async {
+    final existing = await findByFirebaseUid(firebaseUid);
+    if (existing != null) return existing;
+    // Create a local user linked to Firebase. PIN is random (not used for
+    // online login); admin can set it later for offline access.
+    final salt = _salt();
+    final user = LocalUsersCompanion(
+      id: Value(newId()),
+      name: Value(name.trim()),
+      pinHash: Value(hashPin(newId(), salt)),
+      pinSalt: Value(salt),
+      role: const Value('operator'),
+      firebaseUid: Value(firebaseUid),
+      email: Value(email.trim()),
+      createdAt: Value(PkTime.nowEpochMs()),
+    );
+    await db.into(db.localUsers).insert(user);
+    return (db.select(db.localUsers)
+          ..where((t) => t.firebaseUid.equals(firebaseUid)))
+        .getSingle();
+  }
+
+  /// Logs in via Firebase UID (after Firebase Auth sign-in).
+  Future<Session?> loginWithFirebaseUid(String firebaseUid) async {
+    final user = await findByFirebaseUid(firebaseUid);
+    if (user == null || user.isActive != 1) return null;
+    await _audit(
+        user.id, 'auth.login', 'LocalUsers', user.id, 'Firebase login');
+    return Session(userId: user.id, name: user.name, role: user.role);
+  }
+
   Future<void> resetPin({
     required String userId,
     required String newPin,
