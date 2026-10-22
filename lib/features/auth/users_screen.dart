@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/providers.dart';
+import '../../core/services/firebase_auth_service.dart';
 import '../../core/utils/validators.dart';
 import '../../data/db/app_database.dart';
 import '../../widgets/common.dart';
@@ -62,47 +63,82 @@ class UsersScreen extends ConsumerWidget {
   Future<void> _addUser(BuildContext context, WidgetRef ref) async {
     final name = TextEditingController();
     final pin = TextEditingController();
+    final email = TextEditingController();
+    final password = TextEditingController();
     String role = 'operator';
+    bool createOnline = false;
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx2, setS) => AlertDialog(
           title: const Text('Add user'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                  controller: name,
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                    controller: name,
+                    decoration: const InputDecoration(
+                        labelText: 'Name *')),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: pin,
                   decoration: const InputDecoration(
-                      labelText: 'Name *')),
-              const SizedBox(height: 12),
-              TextField(
-                controller: pin,
-                decoration: const InputDecoration(
-                    labelText: 'PIN (4-8 digits) *'),
-                keyboardType: TextInputType.number,
-                obscureText: true,
-              ),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-                value: role,
-                decoration:
-                    const InputDecoration(labelText: 'Role'),
-                items: const [
-                  DropdownMenuItem(
-                      value: 'admin',
-                      child: Text('Administrator')),
-                  DropdownMenuItem(
-                      value: 'operator',
-                      child: Text('Sales Operator')),
-                  DropdownMenuItem(
-                      value: 'viewer',
-                      child: Text('View Only')),
+                      labelText: 'PIN (4-8 digits) *'),
+                  keyboardType: TextInputType.number,
+                  obscureText: true,
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  value: role,
+                  decoration:
+                      const InputDecoration(labelText: 'Role'),
+                  items: const [
+                    DropdownMenuItem(
+                        value: 'admin',
+                        child: Text('Administrator')),
+                    DropdownMenuItem(
+                        value: 'operator',
+                        child: Text('Sales Operator')),
+                    DropdownMenuItem(
+                        value: 'viewer',
+                        child: Text('View Only')),
+                  ],
+                  onChanged: (v) =>
+                      setS(() => role = v ?? 'operator'),
+                ),
+                const SizedBox(height: 12),
+                CheckboxListTile(
+                  title: const Text('Create online account',
+                      style: TextStyle(fontSize: 14)),
+                  subtitle: const Text(
+                      'For login on other devices via Firebase',
+                      style: TextStyle(fontSize: 12)),
+                  value: createOnline,
+                  onChanged: (v) =>
+                      setS(() => createOnline = v ?? false),
+                  controlAffinity:
+                      ListTileControlAffinity.leading,
+                  contentPadding: EdgeInsets.zero,
+                ),
+                if (createOnline) ...[
+                  TextField(
+                    controller: email,
+                    decoration: const InputDecoration(
+                        labelText: 'Email *',
+                        hintText: 'operator@shop.com'),
+                    keyboardType: TextInputType.emailAddress,
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: password,
+                    decoration: const InputDecoration(
+                        labelText: 'Password * (min 6 chars)'),
+                    obscureText: true,
+                  ),
                 ],
-                onChanged: (v) =>
-                    setS(() => role = v ?? 'operator'),
-              ),
-            ],
+              ],
+            ),
           ),
           actions: [
             TextButton(
@@ -121,13 +157,39 @@ class UsersScreen extends ConsumerWidget {
       showErrorSnack(context, 'Enter a name and valid PIN');
       return;
     }
+    if (createOnline &&
+        (email.text.trim().isEmpty || password.text.length < 6)) {
+      showErrorSnack(
+          context, 'Enter a valid email and password (min 6 chars)');
+      return;
+    }
     try {
-      await ref.read(authServiceProvider).createUser(
-            name: name.text,
-            pin: pin.text,
-            role: role,
-            actorId: ref.read(sessionProvider)!.userId,
+      final auth = ref.read(authServiceProvider);
+      final user = await auth.createUser(
+        name: name.text,
+        pin: pin.text,
+        role: role,
+        actorId: ref.read(sessionProvider)!.userId,
+      );
+      // Create Firebase account and link it.
+      if (createOnline) {
+        try {
+          final fbAuth = FirebaseAuthService();
+          final uid = await fbAuth.createUser(
+            email: email.text,
+            password: password.text,
           );
+          await auth.linkFirebaseUid(user.id, uid, email.text.trim());
+          // Sign back in as admin (creating user signs in as them).
+          await fbAuth.signOut();
+        } catch (e) {
+          if (context.mounted) {
+            showErrorSnack(
+                context, 'Local user created, but online account failed: $e');
+          }
+          return;
+        }
+      }
       if (context.mounted) showOkSnack(context, 'User added');
     } catch (e) {
       if (context.mounted) showErrorSnack(context, e);

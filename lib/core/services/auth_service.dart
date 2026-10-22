@@ -135,6 +135,17 @@ class AuthService {
         .getSingle();
   }
 
+  /// Links a Firebase account to an existing local user.
+  Future<void> linkFirebaseUid(
+      String userId, String firebaseUid, String email) async {
+    await (db.update(db.localUsers)..where((t) => t.id.equals(userId))).write(
+      LocalUsersCompanion(
+        firebaseUid: Value(firebaseUid),
+        email: Value(email.trim()),
+      ),
+    );
+  }
+
   /// Logs in via Firebase UID (after Firebase Auth sign-in).
   Future<Session?> loginWithFirebaseUid(String firebaseUid) async {
     final user = await findByFirebaseUid(firebaseUid);
