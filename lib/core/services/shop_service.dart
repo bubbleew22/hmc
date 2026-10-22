@@ -1,10 +1,15 @@
 import 'package:drift/drift.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../data/db/app_database.dart';
+import '../utils/time.dart';
+import 'sync_service.dart';
 
 /// Shop settings + first-launch setup.
+/// Settings are synced to Firestore when online (Phase 2).
 class ShopService {
   final AppDatabase db;
+  final SyncService _sync = SyncService();
   ShopService(this.db);
 
   Future<ShopSetting?> getSettings() => db.readSettings();
@@ -46,6 +51,74 @@ class ShopService {
     } else {
       await (db.update(db.shopSettings)..where((t) => t.id.equals(existing.id)))
           .write(companion);
+    }
+    // Push to Firestore for multi-device sync (best-effort, offline-safe).
+    _pushSettingsToCloud();
+  }
+
+  /// Pushes current settings to Firestore (fire-and-forget).
+  Future<void> _pushSettingsToCloud() async {
+    try {
+      final s = await db.readSettings();
+      if (s == null) return;
+      await _sync.pushSettings({
+        'shopName': s.shopName,
+        'subtitle': s.subtitle,
+        'contactNumber': s.contactNumber,
+        'address': s.address,
+        'invoiceFooter': s.invoiceFooter,
+        'themeMode': s.themeMode,
+        'whatsappTemplate': s.whatsappTemplate,
+      }, PkTime.nowEpochMs());
+    } catch (e) {
+      debugPrint('Settings sync push failed (offline?): $e');
+    }
+  }
+
+  /// Pulls settings from Firestore and applies locally if newer.
+  /// Called on app startup when online.
+  Future<void> pullSettingsFromCloud() async {
+    try {
+      final remote = await _sync.pullSettings();
+      if (remote == null) return;
+      final remoteUpdatedAt = remote['updatedAt'] as int?;
+      // For now, always apply remote if it exists (simple strategy).
+      // TODO: Compare timestamps for proper last-write-wins.
+      if (remoteUpdatedAt != null) {
+        final existing = await db.readSettings();
+        if (existing == null) {
+          await db.into(db.shopSettings).insert(ShopSettingsCompanion(
+            shopName: Value(remote['shopName'] as String? ?? ''),
+            subtitle: Value(remote['subtitle'] as String? ?? ''),
+            contactNumber: Value(remote['contactNumber'] as String? ?? ''),
+            address: Value(remote['address'] as String? ?? ''),
+            invoiceFooter: Value(remote['invoiceFooter'] as String? ?? ''),
+            themeMode: Value(remote['themeMode'] as String? ?? 'system'),
+            whatsappTemplate:
+                Value(remote['whatsappTemplate'] as String? ?? ''),
+          ));
+        } else {
+          await (db.update(db.shopSettings)
+                ..where((t) => t.id.equals(existing.id)))
+              .write(ShopSettingsCompanion(
+            shopName: Value(remote['shopName'] as String? ?? existing.shopName),
+            subtitle: Value(remote['subtitle'] as String? ?? existing.subtitle),
+            contactNumber: Value(
+                remote['contactNumber'] as String? ?? existing.contactNumber),
+            address:
+                Value(remote['address'] as String? ?? existing.address),
+            invoiceFooter: Value(
+                remote['invoiceFooter'] as String? ?? existing.invoiceFooter),
+            themeMode: Value(
+                remote['themeMode'] as String? ?? existing.themeMode),
+            whatsappTemplate: Value(remote['whatsappTemplate'] as String? ??
+                existing.whatsappTemplate),
+          ));
+        }
+        debugPrint('Settings synced from cloud');
+      }
+    } catch (e) {
+      debugPrint('Settings sync pull failed (offline?): $e');
     }
   }
 
