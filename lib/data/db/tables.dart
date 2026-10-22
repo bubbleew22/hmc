@@ -42,6 +42,10 @@ class LocalUsers extends Table {
   TextColumn get role => text()();
   IntColumn get isActive => integer().withDefault(const Constant(1))();
   IntColumn get useBiometrics => integer().withDefault(const Constant(0))();
+  /// Firebase Auth UID — links local user to Firebase account for sync.
+  TextColumn get firebaseUid => text().nullable()();
+  /// Firebase Auth email — for login.
+  TextColumn get email => text().nullable()();
   IntColumn get createdAt => integer()();
   @override
   Set<Column> get primaryKey => {id};

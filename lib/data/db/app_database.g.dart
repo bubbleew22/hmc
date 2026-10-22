@@ -1036,6 +1036,26 @@ class $LocalUsersTable extends LocalUsers
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
+  static const VerificationMeta _firebaseUidMeta = const VerificationMeta(
+    'firebaseUid',
+  );
+  @override
+  late final GeneratedColumn<String> firebaseUid = GeneratedColumn<String>(
+    'firebase_uid',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _emailMeta = const VerificationMeta('email');
+  @override
+  late final GeneratedColumn<String> email = GeneratedColumn<String>(
+    'email',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -1056,6 +1076,8 @@ class $LocalUsersTable extends LocalUsers
     role,
     isActive,
     useBiometrics,
+    firebaseUid,
+    email,
     createdAt,
   ];
   @override
@@ -1122,6 +1144,21 @@ class $LocalUsersTable extends LocalUsers
         ),
       );
     }
+    if (data.containsKey('firebase_uid')) {
+      context.handle(
+        _firebaseUidMeta,
+        firebaseUid.isAcceptableOrUnknown(
+          data['firebase_uid']!,
+          _firebaseUidMeta,
+        ),
+      );
+    }
+    if (data.containsKey('email')) {
+      context.handle(
+        _emailMeta,
+        email.isAcceptableOrUnknown(data['email']!, _emailMeta),
+      );
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -1167,6 +1204,14 @@ class $LocalUsersTable extends LocalUsers
         DriftSqlType.int,
         data['${effectivePrefix}use_biometrics'],
       )!,
+      firebaseUid: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}firebase_uid'],
+      ),
+      email: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}email'],
+      ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}created_at'],
@@ -1190,6 +1235,12 @@ class LocalUser extends DataClass implements Insertable<LocalUser> {
   final String role;
   final int isActive;
   final int useBiometrics;
+
+  /// Firebase Auth UID — links local user to Firebase account for sync.
+  final String? firebaseUid;
+
+  /// Firebase Auth email — for login.
+  final String? email;
   final int createdAt;
   const LocalUser({
     required this.id,
@@ -1199,6 +1250,8 @@ class LocalUser extends DataClass implements Insertable<LocalUser> {
     required this.role,
     required this.isActive,
     required this.useBiometrics,
+    this.firebaseUid,
+    this.email,
     required this.createdAt,
   });
   @override
@@ -1211,6 +1264,12 @@ class LocalUser extends DataClass implements Insertable<LocalUser> {
     map['role'] = Variable<String>(role);
     map['is_active'] = Variable<int>(isActive);
     map['use_biometrics'] = Variable<int>(useBiometrics);
+    if (!nullToAbsent || firebaseUid != null) {
+      map['firebase_uid'] = Variable<String>(firebaseUid);
+    }
+    if (!nullToAbsent || email != null) {
+      map['email'] = Variable<String>(email);
+    }
     map['created_at'] = Variable<int>(createdAt);
     return map;
   }
@@ -1224,6 +1283,12 @@ class LocalUser extends DataClass implements Insertable<LocalUser> {
       role: Value(role),
       isActive: Value(isActive),
       useBiometrics: Value(useBiometrics),
+      firebaseUid: firebaseUid == null && nullToAbsent
+          ? const Value.absent()
+          : Value(firebaseUid),
+      email: email == null && nullToAbsent
+          ? const Value.absent()
+          : Value(email),
       createdAt: Value(createdAt),
     );
   }
@@ -1241,6 +1306,8 @@ class LocalUser extends DataClass implements Insertable<LocalUser> {
       role: serializer.fromJson<String>(json['role']),
       isActive: serializer.fromJson<int>(json['isActive']),
       useBiometrics: serializer.fromJson<int>(json['useBiometrics']),
+      firebaseUid: serializer.fromJson<String?>(json['firebaseUid']),
+      email: serializer.fromJson<String?>(json['email']),
       createdAt: serializer.fromJson<int>(json['createdAt']),
     );
   }
@@ -1255,6 +1322,8 @@ class LocalUser extends DataClass implements Insertable<LocalUser> {
       'role': serializer.toJson<String>(role),
       'isActive': serializer.toJson<int>(isActive),
       'useBiometrics': serializer.toJson<int>(useBiometrics),
+      'firebaseUid': serializer.toJson<String?>(firebaseUid),
+      'email': serializer.toJson<String?>(email),
       'createdAt': serializer.toJson<int>(createdAt),
     };
   }
@@ -1267,6 +1336,8 @@ class LocalUser extends DataClass implements Insertable<LocalUser> {
     String? role,
     int? isActive,
     int? useBiometrics,
+    Value<String?> firebaseUid = const Value.absent(),
+    Value<String?> email = const Value.absent(),
     int? createdAt,
   }) => LocalUser(
     id: id ?? this.id,
@@ -1276,6 +1347,8 @@ class LocalUser extends DataClass implements Insertable<LocalUser> {
     role: role ?? this.role,
     isActive: isActive ?? this.isActive,
     useBiometrics: useBiometrics ?? this.useBiometrics,
+    firebaseUid: firebaseUid.present ? firebaseUid.value : this.firebaseUid,
+    email: email.present ? email.value : this.email,
     createdAt: createdAt ?? this.createdAt,
   );
   LocalUser copyWithCompanion(LocalUsersCompanion data) {
@@ -1289,6 +1362,10 @@ class LocalUser extends DataClass implements Insertable<LocalUser> {
       useBiometrics: data.useBiometrics.present
           ? data.useBiometrics.value
           : this.useBiometrics,
+      firebaseUid: data.firebaseUid.present
+          ? data.firebaseUid.value
+          : this.firebaseUid,
+      email: data.email.present ? data.email.value : this.email,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
     );
   }
@@ -1303,6 +1380,8 @@ class LocalUser extends DataClass implements Insertable<LocalUser> {
           ..write('role: $role, ')
           ..write('isActive: $isActive, ')
           ..write('useBiometrics: $useBiometrics, ')
+          ..write('firebaseUid: $firebaseUid, ')
+          ..write('email: $email, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
@@ -1317,6 +1396,8 @@ class LocalUser extends DataClass implements Insertable<LocalUser> {
     role,
     isActive,
     useBiometrics,
+    firebaseUid,
+    email,
     createdAt,
   );
   @override
@@ -1330,6 +1411,8 @@ class LocalUser extends DataClass implements Insertable<LocalUser> {
           other.role == this.role &&
           other.isActive == this.isActive &&
           other.useBiometrics == this.useBiometrics &&
+          other.firebaseUid == this.firebaseUid &&
+          other.email == this.email &&
           other.createdAt == this.createdAt);
 }
 
@@ -1341,6 +1424,8 @@ class LocalUsersCompanion extends UpdateCompanion<LocalUser> {
   final Value<String> role;
   final Value<int> isActive;
   final Value<int> useBiometrics;
+  final Value<String?> firebaseUid;
+  final Value<String?> email;
   final Value<int> createdAt;
   final Value<int> rowid;
   const LocalUsersCompanion({
@@ -1351,6 +1436,8 @@ class LocalUsersCompanion extends UpdateCompanion<LocalUser> {
     this.role = const Value.absent(),
     this.isActive = const Value.absent(),
     this.useBiometrics = const Value.absent(),
+    this.firebaseUid = const Value.absent(),
+    this.email = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
@@ -1362,6 +1449,8 @@ class LocalUsersCompanion extends UpdateCompanion<LocalUser> {
     required String role,
     this.isActive = const Value.absent(),
     this.useBiometrics = const Value.absent(),
+    this.firebaseUid = const Value.absent(),
+    this.email = const Value.absent(),
     required int createdAt,
     this.rowid = const Value.absent(),
   }) : id = Value(id),
@@ -1378,6 +1467,8 @@ class LocalUsersCompanion extends UpdateCompanion<LocalUser> {
     Expression<String>? role,
     Expression<int>? isActive,
     Expression<int>? useBiometrics,
+    Expression<String>? firebaseUid,
+    Expression<String>? email,
     Expression<int>? createdAt,
     Expression<int>? rowid,
   }) {
@@ -1389,6 +1480,8 @@ class LocalUsersCompanion extends UpdateCompanion<LocalUser> {
       if (role != null) 'role': role,
       if (isActive != null) 'is_active': isActive,
       if (useBiometrics != null) 'use_biometrics': useBiometrics,
+      if (firebaseUid != null) 'firebase_uid': firebaseUid,
+      if (email != null) 'email': email,
       if (createdAt != null) 'created_at': createdAt,
       if (rowid != null) 'rowid': rowid,
     });
@@ -1402,6 +1495,8 @@ class LocalUsersCompanion extends UpdateCompanion<LocalUser> {
     Value<String>? role,
     Value<int>? isActive,
     Value<int>? useBiometrics,
+    Value<String?>? firebaseUid,
+    Value<String?>? email,
     Value<int>? createdAt,
     Value<int>? rowid,
   }) {
@@ -1413,6 +1508,8 @@ class LocalUsersCompanion extends UpdateCompanion<LocalUser> {
       role: role ?? this.role,
       isActive: isActive ?? this.isActive,
       useBiometrics: useBiometrics ?? this.useBiometrics,
+      firebaseUid: firebaseUid ?? this.firebaseUid,
+      email: email ?? this.email,
       createdAt: createdAt ?? this.createdAt,
       rowid: rowid ?? this.rowid,
     );
@@ -1442,6 +1539,12 @@ class LocalUsersCompanion extends UpdateCompanion<LocalUser> {
     if (useBiometrics.present) {
       map['use_biometrics'] = Variable<int>(useBiometrics.value);
     }
+    if (firebaseUid.present) {
+      map['firebase_uid'] = Variable<String>(firebaseUid.value);
+    }
+    if (email.present) {
+      map['email'] = Variable<String>(email.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<int>(createdAt.value);
     }
@@ -1461,6 +1564,8 @@ class LocalUsersCompanion extends UpdateCompanion<LocalUser> {
           ..write('role: $role, ')
           ..write('isActive: $isActive, ')
           ..write('useBiometrics: $useBiometrics, ')
+          ..write('firebaseUid: $firebaseUid, ')
+          ..write('email: $email, ')
           ..write('createdAt: $createdAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -14890,6 +14995,8 @@ typedef $$LocalUsersTableCreateCompanionBuilder =
       required String role,
       Value<int> isActive,
       Value<int> useBiometrics,
+      Value<String?> firebaseUid,
+      Value<String?> email,
       required int createdAt,
       Value<int> rowid,
     });
@@ -14902,6 +15009,8 @@ typedef $$LocalUsersTableUpdateCompanionBuilder =
       Value<String> role,
       Value<int> isActive,
       Value<int> useBiometrics,
+      Value<String?> firebaseUid,
+      Value<String?> email,
       Value<int> createdAt,
       Value<int> rowid,
     });
@@ -14947,6 +15056,16 @@ class $$LocalUsersTableFilterComposer
 
   ColumnFilters<int> get useBiometrics => $composableBuilder(
     column: $table.useBiometrics,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get firebaseUid => $composableBuilder(
+    column: $table.firebaseUid,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get email => $composableBuilder(
+    column: $table.email,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -15000,6 +15119,16 @@ class $$LocalUsersTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get firebaseUid => $composableBuilder(
+    column: $table.firebaseUid,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get email => $composableBuilder(
+    column: $table.email,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -15037,6 +15166,14 @@ class $$LocalUsersTableAnnotationComposer
     column: $table.useBiometrics,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get firebaseUid => $composableBuilder(
+    column: $table.firebaseUid,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get email =>
+      $composableBuilder(column: $table.email, builder: (column) => column);
 
   GeneratedColumn<int> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -15080,6 +15217,8 @@ class $$LocalUsersTableTableManager
                 Value<String> role = const Value.absent(),
                 Value<int> isActive = const Value.absent(),
                 Value<int> useBiometrics = const Value.absent(),
+                Value<String?> firebaseUid = const Value.absent(),
+                Value<String?> email = const Value.absent(),
                 Value<int> createdAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => LocalUsersCompanion(
@@ -15090,6 +15229,8 @@ class $$LocalUsersTableTableManager
                 role: role,
                 isActive: isActive,
                 useBiometrics: useBiometrics,
+                firebaseUid: firebaseUid,
+                email: email,
                 createdAt: createdAt,
                 rowid: rowid,
               ),
@@ -15102,6 +15243,8 @@ class $$LocalUsersTableTableManager
                 required String role,
                 Value<int> isActive = const Value.absent(),
                 Value<int> useBiometrics = const Value.absent(),
+                Value<String?> firebaseUid = const Value.absent(),
+                Value<String?> email = const Value.absent(),
                 required int createdAt,
                 Value<int> rowid = const Value.absent(),
               }) => LocalUsersCompanion.insert(
@@ -15112,6 +15255,8 @@ class $$LocalUsersTableTableManager
                 role: role,
                 isActive: isActive,
                 useBiometrics: useBiometrics,
+                firebaseUid: firebaseUid,
+                email: email,
                 createdAt: createdAt,
                 rowid: rowid,
               ),

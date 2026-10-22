@@ -66,6 +66,11 @@ class AppDatabase extends _$AppDatabase {
           if (from < 2) {
             await m.addColumn(purchaseInvoices, purchaseInvoices.userId);
           }
+          // v2 → v3: add Firebase Auth linking to local_users.
+          if (from < 3) {
+            await m.addColumn(localUsers, localUsers.firebaseUid);
+            await m.addColumn(localUsers, localUsers.email);
+          }
         },
         beforeOpen: (details) async {
           await customStatement('PRAGMA foreign_keys = ON');

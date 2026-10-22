@@ -1,15 +1,16 @@
 import 'dart:async';
 
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app.dart';
+import 'firebase_options.dart';
 import 'startup_error_app.dart';
 
 /// Hassan Mobile Center — Shewa Adda
-/// Offline-first. Firebase config files are in place (android/app/
-/// google-services.json, ios/Runner/GoogleService-Info.plist) for future
-/// cloud sync — firebase_core will be re-added then.
+/// Firebase connected: Auth + Firestore for multi-device sync.
+/// Local SQLite remains the offline-first store; Firebase syncs across devices.
 ///
 /// Startup is wrapped in a last-resort error boundary: any uncaught error
 /// while [hmcStartupPhase] is true replaces the app with [StartupErrorApp],
@@ -30,7 +31,16 @@ Future<void> main() async {
     }
   };
 
-  runZonedGuarded(() {
+  runZonedGuarded(() async {
+    // Initialize Firebase (Auth + Firestore). If it fails (e.g. no network
+    // on first run), the app still works offline with local data.
+    try {
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+    } catch (e) {
+      debugPrint('Firebase init failed (offline mode): $e');
+    }
     runApp(const ProviderScope(child: HmcApp()));
   }, (error, stack) {
     if (hmcStartupPhase) {
